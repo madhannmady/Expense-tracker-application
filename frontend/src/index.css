@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+/* ===== Tailwind v4 Theme Tokens ===== */
+@theme {
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+
+  /* Green palette for charts */
+  --color-chart-1: oklch(0.55 0.18 145);
+  --color-chart-2: oklch(0.62 0.16 148);
+  --color-chart-3: oklch(0.68 0.14 150);
+  --color-chart-4: oklch(0.74 0.12 153);
+  --color-chart-5: oklch(0.80 0.10 155);
+}
+
+/* ===== Light Theme Variables ===== */
+:root {
+  --color-bg: #ffffff;
+  --color-fg: #0a0a0a;
+  --color-card: #ffffff;
+  --color-card-fg: #0a0a0a;
+  --color-primary: #16a34a;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #f0fdf4;
+  --color-secondary-fg: #14532d;
+  --color-muted: #f4f4f5;
+  --color-muted-fg: #71717a;
+  --color-accent: #f0fdf4;
+  --color-accent-fg: #14532d;
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #16a34a;
+  --color-destructive: #ef4444;
+  --color-success: #16a34a;
+  --color-warning: #eab308;
+  --sidebar-bg: #fafafa;
+  --sidebar-fg: #0a0a0a;
+  --sidebar-border: #e4e4e7;
+  --sidebar-active: #16a34a;
+}
+
+/* ===== Dark Theme Variables ===== */
+.dark {
+  --color-bg: #09090b;
+  --color-fg: #fafafa;
+  --color-card: #111113;
+  --color-card-fg: #fafafa;
+  --color-primary: #22c55e;
+  --color-primary-fg: #052e16;
+  --color-secondary: #0c1f0f;
+  --color-secondary-fg: #d1fae5;
+  --color-muted: #18181b;
+  --color-muted-fg: #a1a1aa;
+  --color-accent: #0c1f0f;
+  --color-accent-fg: #d1fae5;
+  --color-border: #27272a;
+  --color-input: #27272a;
+  --color-ring: #22c55e;
+  --color-destructive: #ef4444;
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --sidebar-bg: #0c0c0e;
+  --sidebar-fg: #fafafa;
+  --sidebar-border: #27272a;
+  --sidebar-active: #22c55e;
+}
+
+/* ===== Base Resets ===== */
+*,
+*::before,
+*::after {
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-muted); }
+::-webkit-scrollbar-thumb { background: var(--color-primary); opacity: 0.4; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { opacity: 0.6; }
+
+/* ===== Utility classes for themed colors ===== */
+.bg-page { background-color: var(--color-bg); }
+.bg-card { background-color: var(--color-card); }
+.bg-card-hover { background-color: color-mix(in srgb, var(--color-card) 90%, var(--color-primary)); }
+.bg-muted { background-color: var(--color-muted); }
+.bg-primary { background-color: var(--color-primary); }
+.bg-primary-soft { background-color: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-destructive-soft { background-color: color-mix(in srgb, var(--color-destructive) 10%, transparent); }
+
+.text-fg { color: var(--color-fg); }
+.text-card-fg { color: var(--color-card-fg); }
+.text-muted-fg { color: var(--color-muted-fg); }
+.text-primary { color: var(--color-primary); }
+.text-primary-fg { color: var(--color-primary-fg); }
+.text-destructive { color: var(--color-destructive); }
+.text-success { color: var(--color-success); }
+
+.border-themed { border-color: var(--color-border); }
+.border-primary { border-color: var(--color-primary); }
+.ring-primary { --tw-ring-color: var(--color-primary); }
+
+
+/* ===== Input base ===== */
+.input-base {
+  background-color: var(--color-muted);
+  color: var(--color-fg);
+  border: 2px solid transparent;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.input-base:focus {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+/* ===== Button primary ===== */
+.btn-primary {
+  background-color: #0f3424;
+  border: 1px solid #166534;
+  color: #e2e8f0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dark .btn-primary {
+  background-color: #0f3424;
+  border: 1px solid #166534;
+  color: #e2e8f0;
+}
+.btn-primary:hover {
+  background-color: #12402c;
+  transform: translateY(-1px);
+}
+.dark .btn-primary:hover {
+  background-color: #12402c;
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Card base ===== */
+.card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+}
+.card-elevated {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+.dark .card-elevated {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  color: var(--sidebar-fg);
+}
+
+.sidebar-link {
+  color: var(--color-muted-fg);
+  transition: all 0.2s ease;
+}
+.sidebar-link:hover {
+  color: var(--color-fg);
+  background-color: var(--color-muted);
+}
+.sidebar-link.active {
+  color: var(--sidebar-active);
+  background-color: color-mix(in srgb, var(--sidebar-active) 10%, transparent);
+  font-weight: 600;
+}
+
+/* Recharts tooltip fix */
+.recharts-tooltip-wrapper { outline: none !important; }
