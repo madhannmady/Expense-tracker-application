@@ -27,16 +27,16 @@ export default function MonthlyRecords() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+          <div className="w-full">
             <Skeleton className="h-8 w-48 mb-2" />
             <Skeleton className="h-4 w-32" />
           </div>
-          <Skeleton className="h-12 w-[140px] rounded-xl" />
+          <Skeleton className="h-12 w-full sm:w-[140px] rounded-xl" />
         </div>
         <Skeleton className="h-12 w-full max-w-md rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}
         </div>
       </div>
@@ -44,20 +44,20 @@ export default function MonthlyRecords() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-fg tracking-tight">Monthly Records</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Monthly Records</h1>
           <p className="text-sm text-muted-fg mt-1">{records.length} {records.length === 1 ? 'record' : 'records'} total</p>
         </div>
-        <button onClick={() => navigate('/records/create')} className="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl text-sm">
+        <button onClick={() => navigate('/records/create')} className="btn-primary flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto px-5 py-3 rounded-xl text-sm">
           <Plus size={18} /> New Record
         </button>
       </motion.div>
 
       {records.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="relative max-w-md">
+          <div className="relative w-full">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-fg pointer-events-none" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by month, year, or notes..." className="input-base w-full pl-12 pr-4 py-3 rounded-xl text-sm" />
           </div>
@@ -80,7 +80,7 @@ export default function MonthlyRecords() {
           <p className="text-sm text-muted-fg">No records match your search</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filtered.map((record, i) => (
             <MonthCard key={record.id} record={record} index={i} />
           ))}

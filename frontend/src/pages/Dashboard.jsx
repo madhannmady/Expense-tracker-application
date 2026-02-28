@@ -21,17 +21,17 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
         <div>
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[120px] rounded-2xl" />)}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-          <Skeleton className="lg:col-span-1 h-[340px] rounded-2xl" />
-          <Skeleton className="lg:col-span-3 h-[340px] rounded-2xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-5">
+          <Skeleton className="lg:col-span-1 h-[280px] sm:h-[320px] lg:h-[340px] rounded-2xl" />
+          <Skeleton className="lg:col-span-3 h-[280px] sm:h-[320px] lg:h-[340px] rounded-2xl" />
         </div>
       </div>
     );
@@ -40,20 +40,20 @@ export default function Dashboard() {
   const d = stats || { totalIncome: 0, totalExpense: 0, totalSavings: 0, savingRate: 0, categoryBreakdown: [], monthlyTrend: [], recentExpenses: [] };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl font-bold text-fg tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-fg mt-1">Your complete financial overview</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-fg mt-1 sm:mt-2">Your complete financial overview</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard title="Total Income" value={d.totalIncome} icon={BadgeIndianRupee} index={0} />
         <StatCard title="Total Expenses" value={d.totalExpense} icon={TrendingDown} index={1} />
         <StatCard title="Total Savings" value={d.totalSavings} icon={PiggyBank} index={2} />
         <StatCard title="Saving Rate" value={d.savingRate} icon={Activity} index={3} isCurrency={false} suffix="%" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-5">
         <div className="lg:col-span-1">
           <ExpensePieChart data={d.categoryBreakdown} />
         </div>
@@ -62,7 +62,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* Top Categories */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-6">
           <h3 className="text-base font-semibold text-fg mb-5">Top Expenses</h3>

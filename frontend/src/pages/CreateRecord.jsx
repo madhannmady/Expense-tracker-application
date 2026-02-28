@@ -109,7 +109,7 @@ export default function CreateRecord() {
   }
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-3xl space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <button
@@ -119,7 +119,7 @@ export default function CreateRecord() {
           <ArrowLeft size={16} />
           {isEdit ? 'Back to record' : 'Back to records'}
         </button>
-        <h1 className="text-2xl font-bold text-fg tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">
           {isEdit ? 'Edit Record' : 'Create Monthly Record'}
         </h1>
         <p className="text-sm text-muted-fg mt-1">
@@ -127,20 +127,20 @@ export default function CreateRecord() {
         </p>
       </motion.div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* Period */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Period</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-4 sm:p-6">
+          <h2 className="text-sm sm:text-[15px] font-semibold text-fg mb-4 sm:mb-5">Period</h2>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-fg">Month</label>
-              <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-base w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
+              <label className="block text-xs sm:text-sm font-medium text-muted-fg">Month</label>
+              <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-base w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm cursor-pointer">
                 {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-fg">Year</label>
-              <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="input-base w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
+              <label className="block text-xs sm:text-sm font-medium text-muted-fg">Year</label>
+              <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="input-base w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm cursor-pointer">
                 {years.map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
@@ -148,18 +148,18 @@ export default function CreateRecord() {
         </motion.div>
 
         {/* Income Sources */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Income Sources</h2>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="card p-4 sm:p-6">
+          <h2 className="text-sm sm:text-[15px] font-semibold text-fg mb-4 sm:mb-5">Income Sources</h2>
 
           {/* Fixed input bar */}
-          <div className="flex gap-3 items-start mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-start mb-4">
             <input
               type="text"
               value={incomeInput.source}
               onChange={(e) => setIncomeInput({ ...incomeInput, source: e.target.value })}
               onKeyDown={handleIncomeKeyDown}
               placeholder="e.g., Salary, Freelance"
-              className="input-base flex-1 px-4 py-3 rounded-xl text-sm"
+              className="input-base flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
             />
             <input
               type="number"
@@ -168,12 +168,12 @@ export default function CreateRecord() {
               onKeyDown={handleIncomeKeyDown}
               placeholder="Amount"
               min="0"
-              className="input-base w-36 px-4 py-3 rounded-xl text-sm"
+              className="input-base w-full sm:w-36 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
             />
             <button
               type="button"
               onClick={addIncome}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-3 rounded-xl bg-[#0f3424] text-slate-200 border border-[#166534] cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+              className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-semibold px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#0f3424] text-slate-200 border border-[#166534] cursor-pointer hover:opacity-80 transition-opacity w-full sm:w-auto"
             >
               <Plus size={14} /> Add
             </button>
@@ -211,18 +211,18 @@ export default function CreateRecord() {
         </motion.div>
 
         {/* Expenses */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Expenses</h2>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card p-4 sm:p-6">
+          <h2 className="text-sm sm:text-[15px] font-semibold text-fg mb-4 sm:mb-5">Expenses</h2>
 
           {/* Fixed input bar */}
-          <div className="flex gap-3 items-start mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-start mb-4">
             <input
               type="text"
               value={expenseInput.name}
               onChange={(e) => setExpenseInput({ ...expenseInput, name: e.target.value })}
               onKeyDown={handleExpenseKeyDown}
               placeholder="e.g., Rent, Groceries, Netflix"
-              className="input-base flex-1 px-4 py-3 rounded-xl text-sm"
+              className="input-base flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
             />
             <input
               type="number"
@@ -231,12 +231,12 @@ export default function CreateRecord() {
               onKeyDown={handleExpenseKeyDown}
               placeholder="Amount"
               min="0"
-              className="input-base w-36 px-4 py-3 rounded-xl text-sm"
+              className="input-base w-full sm:w-36 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
             />
             <button
               type="button"
               onClick={addExpense}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-3 rounded-xl bg-[#0f3424] text-slate-200 border border-[#166534] cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+              className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-semibold px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#0f3424] text-slate-200 border border-[#166534] cursor-pointer hover:opacity-80 transition-opacity w-full sm:w-auto"
             >
               <Plus size={14} /> Add
             </button>
@@ -273,21 +273,21 @@ export default function CreateRecord() {
         </motion.div>
 
         {/* Savings & Notes */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Additional Details</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="card p-4 sm:p-6">
+          <h2 className="text-sm sm:text-[15px] font-semibold text-fg mb-4 sm:mb-5">Additional Details</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-fg">Savings Goal (₹)</label>
-              <input type="number" value={savingsGoal} onChange={(e) => setSavingsGoal(e.target.value)} placeholder="e.g., 10000" min="0" className="input-base w-full px-4 py-3 rounded-xl text-sm" />
+              <label className="block text-xs sm:text-sm font-medium text-muted-fg">Savings Goal (₹)</label>
+              <input type="number" value={savingsGoal} onChange={(e) => setSavingsGoal(e.target.value)} placeholder="e.g., 10000" min="0" className="input-base w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm" />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-fg">Notes</label>
-              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes for this month" maxLength={500} className="input-base w-full px-4 py-3 rounded-xl text-sm" />
+              <label className="block text-xs sm:text-sm font-medium text-muted-fg">Notes</label>
+              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes for this month" maxLength={500} className="input-base w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm" />
             </div>
           </div>
         </motion.div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full py-4 rounded-xl text-[15px] flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="btn-primary w-full py-3 sm:py-4 rounded-xl text-sm sm:text-[15px] flex items-center justify-center gap-2">
           {loading ? <Loader2 size={18} className="animate-spin" /> : <><Save size={18} /> {isEdit ? 'Update Record' : 'Save Record'}</>}
         </button>
       </form>

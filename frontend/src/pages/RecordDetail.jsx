@@ -42,23 +42,23 @@ export default function RecordDetail() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+          <div className="w-full">
             <Skeleton className="h-4 w-32 mb-4" />
             <Skeleton className="h-12 w-64" />
           </div>
-          <div className="flex gap-3">
-            <Skeleton className="h-10 w-32 rounded-xl" />
-            <Skeleton className="h-10 w-32 rounded-xl" />
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Skeleton className="h-10 flex-1 sm:flex-none sm:w-32 rounded-xl" />
+            <Skeleton className="h-10 flex-1 sm:flex-none sm:w-32 rounded-xl" />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Skeleton className="h-64 rounded-2xl" />
-          <Skeleton className="h-64 rounded-2xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+          <Skeleton className="h-60 sm:h-64 rounded-2xl" />
+          <Skeleton className="h-60 sm:h-64 rounded-2xl" />
         </div>
       </div>
     );
@@ -81,36 +81,36 @@ export default function RecordDetail() {
     .sort((a, b) => b.amount - a.amount);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+        <div className="w-full">
           <button onClick={() => navigate('/records')} className="flex items-center gap-2 text-sm mb-4 text-muted-fg hover:text-fg transition-colors cursor-pointer">
             <ArrowLeft size={16} /> Back to records
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-soft flex items-center justify-center">
-              <CalendarDays size={22} className="text-primary" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary-soft flex items-center justify-center shrink-0">
+              <CalendarDays size={18} sm:size={22} className="text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-fg tracking-tight">{MONTH_NAMES[record.month - 1]} {record.year}</h1>
-              {record.notes && <p className="text-sm text-muted-fg">{record.notes}</p>}
+              <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">{MONTH_NAMES[record.month - 1]} {record.year}</h1>
+              {record.notes && <p className="text-xs sm:text-sm text-muted-fg line-clamp-1">{record.notes}</p>}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => navigate(`/records/${id}/edit`)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity"
+            className="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity order-2 sm:order-1"
           >
-            <Pencil size={16} /> Edit Record
+            <Pencil size={16} /> Edit
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
             disabled={deleting}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-destructive-soft text-destructive hover:opacity-80 transition-opacity disabled:opacity-60"
+            className="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-destructive-soft text-destructive hover:opacity-80 transition-opacity disabled:opacity-60 order-1 sm:order-2"
           >
-            {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} Delete Record
+            {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} Delete
           </button>
         </div>
       </motion.div>
@@ -125,7 +125,7 @@ export default function RecordDetail() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <StatCard title="Total Income" value={totalIncome} icon={BadgeIndianRupee} index={0} />
         <StatCard title="Total Expenses" value={totalExpense} icon={TrendingDown} index={1} />
         <StatCard title="Savings" value={savings} icon={PiggyBank} index={2} />

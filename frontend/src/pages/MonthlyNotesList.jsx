@@ -26,16 +26,16 @@ export default function MonthlyNotes() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+          <div className="w-full">
             <Skeleton className="h-8 w-64 mb-2" />
             <Skeleton className="h-4 w-32" />
           </div>
-          <Skeleton className="h-10 w-[140px] rounded-xl" />
+          <Skeleton className="h-10 w-full sm:w-[140px] rounded-xl" />
         </div>
         <Skeleton className="h-12 w-full max-w-md rounded-xl" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
         </div>
       </div>
@@ -43,23 +43,23 @@ export default function MonthlyNotes() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-fg tracking-tight">Monthly Notes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Monthly Notes</h1>
           <p className="text-sm text-muted-fg mt-1">{notes.length} note set{notes.length !== 1 ? 's' : ''} total</p>
         </div>
         <button
           onClick={() => navigate('/notes/create')}
-          className="btn-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2"
+          className="btn-primary px-5 py-3 rounded-xl text-sm flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto"
         >
-          <Plus size={16} /> New Notes
+          <Plus size={18} /> New Notes
         </button>
       </motion.div>
 
       {/* Search */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="relative max-w-md">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="relative w-full max-w-md">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-fg" />
         <input
           value={search}
@@ -75,7 +75,7 @@ export default function MonthlyNotes() {
           {notes.length === 0 ? 'No notes yet. Create your first notes for a month!' : 'No matching notes found.'}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filtered.map((n, i) => (
             <motion.div
               key={`${n.month}-${n.year}`}

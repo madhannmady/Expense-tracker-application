@@ -201,3 +201,55 @@ body {
 
 /* Recharts tooltip fix */
 .recharts-tooltip-wrapper { outline: none !important; }
+
+/* ===== Mobile Responsiveness ===== */
+@media (max-width: 1024px) {
+  .sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  }
+
+  /* Hide scrollbar in mobile views */
+  main::-webkit-scrollbar {
+    width: 6px;
+  }
+  main::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  main::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 3px;
+  }
+  main::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-fg);
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+  .sidebar-link,
+  .btn-primary,
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .card {
+    transition: background-color 0.2s ease;
+  }
+
+  .card:active {
+    background-color: var(--color-muted);
+  }
+}
+
+/* Prevent text selection on hamburger menu */
+.sidebar-toggle {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Smooth transitions for all elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
