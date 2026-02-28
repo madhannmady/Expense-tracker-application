@@ -42,12 +42,12 @@ export default function NoteDetail() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl space-y-6">
+      <div className="w-full max-w-3xl space-y-6">
         <Skeleton className="h-10 w-32 rounded-xl" />
         <Skeleton className="h-12 w-64 rounded-xl" />
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
+            <Skeleton key={i} className="h-32 rounded-xl w-full" />
           ))}
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function NoteDetail() {
     .reduce((sum, e) => sum + Number(e.amount), 0);
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="w-full max-w-3xl space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <button
@@ -71,26 +71,26 @@ export default function NoteDetail() {
           <ArrowLeft size={16} />
           Back to notes
         </button>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-fg tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight truncate">
               {MONTH_NAMES[note.month - 1]} {note.year}
             </h1>
             <p className="text-sm text-muted-fg mt-1">
               {note.note_entries?.length || 0} note{(note.note_entries?.length || 0) !== 1 ? 's' : ''}
             </p>
           </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => navigate(`/notes/${id}/edit`)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors whitespace-nowrap"
           >
             <Edit size={16} /> Edit
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
             disabled={deleting}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-60"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-60 whitespace-nowrap"
           >
             {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} Delete
           </button>
@@ -113,14 +113,14 @@ export default function NoteDetail() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20"
+          className="card p-4 sm:p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 w-full"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-fg mb-1">Total Lent This Month</p>
-              <h2 className="text-3xl font-bold text-fg">₹{totalLent.toFixed(2)}</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2">Total Lent This Month</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-fg">₹{totalLent.toFixed(2)}</h2>
             </div>
-            <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
               <IndianRupee size={28} className="text-blue-500" />
             </div>
           </div>
@@ -129,38 +129,38 @@ export default function NoteDetail() {
 
       {/* Notes Sections */}
       {note.note_entries && note.note_entries.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {/* Lending Notes */}
           {note.note_entries.filter((e) => e.type === 'lending').length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="card p-6"
+              className="card p-4 sm:p-6 w-full"
             >
-              <h2 className="text-lg font-semibold text-fg mb-5 flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold text-fg mb-4 sm:mb-5 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
                 Lending Tracker
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-4 w-full">
                 {note.note_entries
                   .filter((e) => e.type === 'lending')
                   .map((entry, i) => (
-                    <div key={i} className="border border-themed rounded-xl p-4 hover:bg-muted/30 transition-colors">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-fg">{entry.title}</h3>
-                          <p className="text-sm text-muted-fg mt-1">
+                    <div key={i} className="border border-themed rounded-xl p-3 sm:p-4 hover:bg-muted/30 transition-colors w-full">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-fg truncate">{entry.title}</h3>
+                          <p className="text-sm text-muted-fg mt-1 truncate">
                             Lent to:{' '}
                             <span className="text-fg font-medium">{entry.person_name || 'N/A'}</span>
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-blue-400">₹{Number(entry.amount).toFixed(2)}</p>
+                        <div className="text-right sm:text-right flex-shrink-0">
+                          <p className="text-lg sm:text-xl font-bold text-blue-400">₹{Number(entry.amount).toFixed(2)}</p>
                           <p className="text-xs text-muted-fg">Amount</p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-fg">{entry.description}</p>
+                      <p className="text-sm text-muted-fg line-clamp-3">{entry.description}</p>
                     </div>
                   ))}
               </div>
@@ -173,19 +173,19 @@ export default function NoteDetail() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="card p-6"
+              className="card p-4 sm:p-6 w-full"
             >
-              <h2 className="text-lg font-semibold text-fg mb-5 flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold text-fg mb-4 sm:mb-5 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
                 Personal Notes
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-4 w-full">
                 {note.note_entries
                   .filter((e) => e.type === 'general')
                   .map((entry, i) => (
-                    <div key={i} className="border border-themed rounded-xl p-4 hover:bg-muted/30 transition-colors">
-                      <h3 className="font-semibold text-fg mb-2">{entry.title}</h3>
-                      <p className="text-sm text-muted-fg">{entry.description}</p>
+                    <div key={i} className="border border-themed rounded-xl p-3 sm:p-4 hover:bg-muted/30 transition-colors w-full">
+                      <h3 className="font-semibold text-fg mb-2 truncate">{entry.title}</h3>
+                      <p className="text-sm text-muted-fg line-clamp-3">{entry.description}</p>
                     </div>
                   ))}
               </div>

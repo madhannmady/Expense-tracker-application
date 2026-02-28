@@ -59,21 +59,21 @@ export default function BudgetDetail() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-500">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+      <div className="w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+          <div className="w-full">
             <Skeleton className="h-4 w-32 mb-4" />
             <Skeleton className="h-12 w-64" />
           </div>
-          <div className="flex gap-3">
-            <Skeleton className="h-10 w-32 rounded-xl" />
-            <Skeleton className="h-10 w-32 rounded-xl" />
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+            <Skeleton className="h-10 flex-1 sm:flex-none sm:w-32 rounded-xl" />
+            <Skeleton className="h-10 flex-1 sm:flex-none sm:w-32 rounded-xl" />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 w-full">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl w-full" />)}
         </div>
-        <Skeleton className="h-[300px] rounded-2xl" />
+        <Skeleton className="h-[280px] sm:h-[300px] rounded-2xl w-full" />
       </div>
     );
   }
@@ -89,27 +89,27 @@ export default function BudgetDetail() {
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-6 sm:space-y-8">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+        <div className="w-full">
           <button onClick={() => navigate('/budgets')} className="flex items-center gap-2 text-sm mb-4 text-muted-fg hover:text-fg transition-colors cursor-pointer">
             <ArrowLeft size={16} /> Back to budgets
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-soft flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary-soft flex items-center justify-center flex-shrink-0">
               <Wallet size={22} className="text-primary" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-fg tracking-tight">{MONTH_NAMES[parseInt(month) - 1]} {year} Budget</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight truncate">{MONTH_NAMES[parseInt(month) - 1]} {year} Budget</h1>
               <p className="text-sm text-muted-fg">{data.length} categories</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => navigate(`/budgets/create?month=${month}&year=${year}`)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity whitespace-nowrap"
           >
             <Pencil size={16} /> Edit Budget
           </button>
@@ -117,7 +117,7 @@ export default function BudgetDetail() {
             <button
               onClick={() => setShowDeleteModal(true)}
               disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-destructive-soft text-destructive hover:opacity-80 transition-opacity disabled:opacity-60"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-destructive-soft text-destructive hover:opacity-80 transition-opacity disabled:opacity-60 whitespace-nowrap"
             >
               <Trash2 size={16} /> {deleting ? 'Deleting...' : 'Delete Budget'}
             </button>
@@ -135,18 +135,18 @@ export default function BudgetDetail() {
       />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-5">
-          <p className="text-sm text-muted-fg mb-1">Total Budget</p>
-          <p className="text-2xl font-bold text-fg tabular-nums">{formatCurrency(totalAllocated)}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5 w-full">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-3 sm:p-5 flex flex-col w-full">
+          <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2 line-clamp-2">Total Budget</p>
+          <p className="text-lg sm:text-2xl font-bold text-fg tabular-nums">{formatCurrency(totalAllocated)}</p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="card p-5">
-          <p className="text-sm text-muted-fg mb-1">Total Actual</p>
-          <p className="text-2xl font-bold text-fg tabular-nums">{formatCurrency(totalActual)}</p>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="card p-3 sm:p-5 flex flex-col w-full">
+          <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2 line-clamp-2">Total Actual</p>
+          <p className="text-lg sm:text-2xl font-bold text-fg tabular-nums">{formatCurrency(totalActual)}</p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card p-5">
-          <p className="text-sm text-muted-fg mb-1">Difference</p>
-          <p className={`text-2xl font-bold tabular-nums ${totalDiff >= 0 ? 'text-success' : 'text-destructive'}`}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card p-3 sm:p-5 flex flex-col w-full">
+          <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2 line-clamp-2">Difference</p>
+          <p className={`text-lg sm:text-2xl font-bold tabular-nums ${totalDiff >= 0 ? 'text-success' : 'text-destructive'}`}>
             {totalDiff >= 0 ? '+' : ''}{formatCurrency(totalDiff)}
           </p>
         </motion.div>
@@ -154,10 +154,10 @@ export default function BudgetDetail() {
 
       {/* Bar Chart */}
       {chartData.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="card p-6">
-          <h3 className="text-base font-semibold text-fg mb-1">Budget vs Actual</h3>
-          <p className="text-xs text-muted-fg mb-5">Comparing allocated budget with actual spending</p>
-          <div className="h-[300px]">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="card p-4 sm:p-6 w-full">
+          <h3 className="text-base sm:text-lg font-semibold text-fg mb-1">Budget vs Actual</h3>
+          <p className="text-xs sm:text-sm text-muted-fg mb-4 sm:mb-5">Comparing allocated budget with actual spending</p>
+          <div className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.4} vertical={false} />
@@ -177,12 +177,12 @@ export default function BudgetDetail() {
       )}
 
       {/* Category breakdown */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-6">
-        <h3 className="text-base font-semibold text-fg mb-5">Category Breakdown</h3>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-4 sm:p-6 w-full">
+        <h3 className="text-base sm:text-lg font-semibold text-fg mb-4 sm:mb-5">Category Breakdown</h3>
         {data.length === 0 ? (
           <p className="text-sm text-muted-fg text-center py-8">No budget data available</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {data.map((item, i) => {
               const diff = Number(item.allocated_amount) - Number(item.actual_amount);
               const isUnder = diff >= 0;
@@ -193,26 +193,26 @@ export default function BudgetDetail() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * i }}
-                  className="p-4 rounded-xl"
+                  className="p-3 sm:p-4 rounded-xl w-full"
                   style={{
                     backgroundColor: isUnder ? 'rgba(34, 197, 94, 0.06)' : 'rgba(239, 68, 68, 0.06)',
                     border: `1px solid ${isUnder ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)'}`,
                   }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-fg">{item.category}</span>
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-2">
+                    <span className="text-sm font-medium text-fg truncate">{item.category}</span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       {isUnder ? <TrendingUp size={14} className="text-success" /> : <TrendingDown size={14} className="text-destructive" />}
                       <span className={`text-sm font-bold tabular-nums ${isUnder ? 'text-success' : 'text-destructive'}`}>
                         {isUnder ? '+' : ''}{formatCurrency(diff)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex justify-between text-xs text-muted-fg mb-1.5">
-                    <span>Budget: {formatCurrency(item.allocated_amount)}</span>
-                    <span>Actual: {formatCurrency(item.actual_amount)}</span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between text-xs text-muted-fg mb-1.5 gap-1">
+                    <span className="truncate">Budget: {formatCurrency(item.allocated_amount)}</span>
+                    <span className="truncate">Actual: {formatCurrency(item.actual_amount)}</span>
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden bg-muted">
+                  <div className="h-2 rounded-full overflow-hidden bg-muted w-full">
                     <motion.div
                       className="h-full rounded-full"
                       style={{ backgroundColor: isUnder ? '#16a34a' : '#9f1239' }}

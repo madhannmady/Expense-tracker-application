@@ -203,12 +203,23 @@ body {
 .recharts-tooltip-wrapper { outline: none !important; }
 
 /* ===== Mobile Responsiveness ===== */
-@media (max-width: 1024px) {
-  .sidebar {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  }
+* {
+  box-sizing: border-box;
+}
 
-  /* Hide scrollbar in mobile views */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+@media (max-width: 1024px) {
   main::-webkit-scrollbar {
     width: 6px;
   }
@@ -226,9 +237,8 @@ body {
 
 /* Touch-friendly tap targets */
 @media (hover: none) and (pointer: coarse) {
-  .sidebar-link,
-  .btn-primary,
-  button {
+  button,
+  a {
     min-height: 44px;
     min-width: 44px;
   }
@@ -242,14 +252,20 @@ body {
   }
 }
 
-/* Prevent text selection on hamburger menu */
-.sidebar-toggle {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Smooth transitions for all elements */
+/* Remove tap highlight */
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix input zoom on mobile */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Prevent layout shift from scrollbar */
+html {
+  overflow-y: scroll;
 }
 

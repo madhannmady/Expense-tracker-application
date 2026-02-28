@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { SidebarProvider } from './context/SidebarContext';
 import { AppLayout } from './components/layout/AppLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -80,10 +79,8 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <SidebarProvider>
-            <Toaster position="bottom-right" theme="dark" richColors />
-            <AppRoutes />
-          </SidebarProvider>
+          <Toaster position="bottom-right" theme="dark" richColors />
+          <AppRoutes />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

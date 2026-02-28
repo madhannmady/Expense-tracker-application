@@ -26,24 +26,24 @@ export default function BudgetManagement() {
 
   if (loading) {
     return (
-      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
           <div className="w-full">
             <Skeleton className="h-8 w-64 mb-2" />
             <Skeleton className="h-4 w-32" />
           </div>
-          <Skeleton className="h-10 w-full sm:w-[140px] rounded-xl" />
+          <Skeleton className="h-10 w-full sm:w-[140px] rounded-xl flex-shrink-0" />
         </div>
         <Skeleton className="h-12 w-full max-w-md rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
+          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-40 rounded-2xl w-full" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="w-full space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -75,7 +75,7 @@ export default function BudgetManagement() {
           {budgets.length === 0 ? 'No budgets yet. Create one to get started!' : 'No matching budgets found.'}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
           {filtered.map((b, i) => {
             const isUnder = b.difference >= 0;
             return (

@@ -27,24 +27,24 @@ export default function MonthlyRecords() {
 
   if (loading) {
     return (
-      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
           <div className="w-full">
             <Skeleton className="h-8 w-48 mb-2" />
             <Skeleton className="h-4 w-32" />
           </div>
-          <Skeleton className="h-12 w-full sm:w-[140px] rounded-xl" />
+          <Skeleton className="h-12 w-full sm:w-[140px] rounded-xl flex-shrink-0" />
         </div>
         <Skeleton className="h-12 w-full max-w-md rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
+          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl w-full" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="w-full space-y-6 sm:space-y-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Monthly Records</h1>
@@ -80,7 +80,7 @@ export default function MonthlyRecords() {
           <p className="text-sm text-muted-fg">No records match your search</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
           {filtered.map((record, i) => (
             <MonthCard key={record.id} record={record} index={i} />
           ))}

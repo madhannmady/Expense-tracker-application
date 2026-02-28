@@ -40,13 +40,13 @@ export default function Dashboard() {
   const d = stats || { totalIncome: 0, totalExpense: 0, totalSavings: 0, savingRate: 0, categoryBreakdown: [], monthlyTrend: [], recentExpenses: [] };
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="w-full space-y-6 sm:space-y-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-fg mt-1 sm:mt-2">Your complete financial overview</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">
         <StatCard title="Total Income" value={d.totalIncome} icon={BadgeIndianRupee} index={0} />
         <StatCard title="Total Expenses" value={d.totalExpense} icon={TrendingDown} index={1} />
         <StatCard title="Total Savings" value={d.totalSavings} icon={PiggyBank} index={2} />
