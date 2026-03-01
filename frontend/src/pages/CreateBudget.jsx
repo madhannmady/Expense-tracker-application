@@ -86,7 +86,7 @@ export default function CreateBudget() {
   }
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="w-full max-w-3xl space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <button
@@ -105,18 +105,18 @@ export default function CreateBudget() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Period */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Period</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-4 sm:p-6">
+          <h2 className="text-sm sm:text-[15px] font-semibold text-fg mb-4 sm:mb-5">Period</h2>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-fg">Month</label>
-              <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-base w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
+              <label className="block text-xs sm:text-sm font-medium text-muted-fg">Month</label>
+              <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-base w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-sm cursor-pointer">
                 {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-fg">Year</label>
-              <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="input-base w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
+              <label className="block text-xs sm:text-sm font-medium text-muted-fg">Year</label>
+              <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="input-base w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-sm cursor-pointer">
                 {years.map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
@@ -124,34 +124,34 @@ export default function CreateBudget() {
         </motion.div>
 
         {/* Budget Categories */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Budget Allocations</h2>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="card p-4 sm:p-6">
+          <h2 className="text-sm sm:text-[15px] font-semibold text-fg mb-4 sm:mb-5">Budget Allocations</h2>
 
-          {/* Fixed input bar */}
-          <div className="flex gap-3 items-start mb-4">
+          {/* Fixed input bar - responsive layout */}
+          <div className="flex flex-col sm:flex-row sm:gap-3 sm:items-start gap-2 mb-4">
             <input
               type="text"
               value={input.category}
               onChange={(e) => setInput({ ...input, category: e.target.value })}
               onKeyDown={handleKeyDown}
-              placeholder="e.g., Rent, Groceries, Transport"
-              className="input-base flex-1 px-4 py-3 rounded-xl text-sm"
+              placeholder="e.g., Rent, Groceries"
+              className="input-base w-full sm:flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
             />
             <input
               type="number"
               value={input.allocated_amount}
               onChange={(e) => setInput({ ...input, allocated_amount: e.target.value })}
               onKeyDown={handleKeyDown}
-              placeholder="Budget Amount"
+              placeholder="Amount"
               min="0"
-              className="input-base w-40 px-4 py-3 rounded-xl text-sm"
+              className="input-base w-full sm:w-32 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
             />
             <button
               type="button"
               onClick={addAllocation}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-3 rounded-xl bg-blue-950 text-blue-100 border border-blue-900 cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+              className="flex items-center justify-center gap-1.5 text-xs font-semibold px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-blue-950 text-blue-100 border border-blue-900 cursor-pointer hover:opacity-80 transition-opacity w-full sm:w-auto sm:shrink-0"
             >
-              <Plus size={14} /> Add
+              <Plus size={14} /> <span className="sm:inline">Add</span>
             </button>
           </div>
 
@@ -190,7 +190,7 @@ export default function CreateBudget() {
           )}
         </motion.div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full py-4 rounded-xl text-[15px] flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="btn-primary w-full py-3 sm:py-4 rounded-xl text-sm sm:text-[15px] flex items-center justify-center gap-2">
           {loading ? <Loader2 size={18} className="animate-spin" /> : <><Save size={18} /> {isEdit ? 'Update Budget' : 'Save Budget'}</>}
         </button>
       </form>

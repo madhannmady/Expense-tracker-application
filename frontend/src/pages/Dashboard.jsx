@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getDashboardStats } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
 import { ExpensePieChart } from '../components/ExpensePieChart';
 import { TrendAreaChart } from '../components/TrendAreaChart';
 import { formatCurrency } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { BadgeIndianRupee, TrendingDown, PiggyBank, Activity } from 'lucide-react';
+import { BadgeIndianRupee, TrendingDown, PiggyBank, Activity, LogOut } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 
 export default function Dashboard() {
+  const { user, logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,17 +23,23 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
+      <div className="w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <Skeleton className="h-7 w-40 sm:h-8" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[120px] rounded-2xl" />)}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">
+          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[120px] rounded-2xl w-full" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-5">
-          <Skeleton className="lg:col-span-1 h-[280px] sm:h-[320px] lg:h-[340px] rounded-2xl" />
-          <Skeleton className="lg:col-span-3 h-[280px] sm:h-[320px] lg:h-[340px] rounded-2xl" />
+          <Skeleton className="lg:col-span-1 h-[280px] sm:h-[320px] lg:h-[340px] rounded-2xl w-full" />
+          <Skeleton className="lg:col-span-3 h-[280px] sm:h-[320px] lg:h-[340px] rounded-2xl w-full" />
         </div>
       </div>
     );
@@ -41,9 +49,21 @@ export default function Dashboard() {
 
   return (
     <div className="w-full space-y-6 sm:space-y-8">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-fg mt-1 sm:mt-2">Your complete financial overview</p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-fg">Hi, {user?.username || 'User'}</h2>
+          <button
+            onClick={logout}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive-soft text-destructive hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
+            title="Logout"
+          >
+            <LogOut size={18} />
+          </button>
+        </div>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-fg tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-fg mt-1 sm:mt-2">Your complete financial overview</p>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">

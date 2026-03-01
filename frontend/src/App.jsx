@@ -75,11 +75,18 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const getToasterPosition = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 ? 'top-center' : 'bottom-right';
+    }
+    return 'bottom-right';
+  };
+
   return (
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <Toaster position="bottom-right" theme="dark" richColors />
+          <Toaster position={getToasterPosition()} theme="dark" richColors />
           <AppRoutes />
         </AuthProvider>
       </ThemeProvider>
