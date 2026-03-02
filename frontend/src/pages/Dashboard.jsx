@@ -54,7 +54,7 @@ export default function Dashboard() {
           <h2 className="text-xl sm:text-2xl font-bold text-fg">Hi, {user?.username || 'User'}</h2>
           <button
             onClick={logout}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive-soft text-destructive hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
+            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-destructive-soft text-destructive hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
             title="Logout"
           >
             <LogOut size={18} />
