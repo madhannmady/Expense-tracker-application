@@ -78,3 +78,10 @@ export const createNotes = (data) => api.post('/notes', data);
 export const updateNotes = (id, data) => api.put(`/notes/${id}`, data);
 export const deleteNotes = (id) => api.delete(`/notes/${id}`);
 
+// Chat AI API
+export const getChats = () => api.get('/chats');
+export const getChatById = (id) => api.get(`/chats/${id}`);
+export const createChat = (title) => api.post('/chats', { title });
+export const sendChatMessage = (id, message) => api.post(`/chats/${id}/messages`, { message }, { timeout: 60000 });
+export const deleteChat = (id) => api.delete(`/chats/${id}`);
+

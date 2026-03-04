@@ -5,6 +5,7 @@ import {
   CalendarDays,
   PieChart,
   Notebook,
+  BotMessageSquare,
 } from 'lucide-react';
 
 const navItems = [
@@ -12,6 +13,7 @@ const navItems = [
   { to: '/records', icon: CalendarDays, label: 'Records' },
   { to: '/budgets', icon: PieChart, label: 'Budgets' },
   { to: '/notes', icon: Notebook, label: 'Notes' },
+  { to: '/ai', icon: BotMessageSquare, label: 'AI' },
 ];
 
 export function BottomNavBar() {

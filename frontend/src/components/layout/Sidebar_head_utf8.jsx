@@ -8,6 +8,7 @@ import {
   ReceiptIndianRupee,
   PieChart,
   Notebook,
+  BotMessageSquare,
 } from 'lucide-react';
 
 const navItems = [
@@ -15,6 +16,7 @@ const navItems = [
   { to: '/records', icon: CalendarDays, label: 'Monthly Records' },
   { to: '/budgets', icon: PieChart, label: 'Budget' },
   { to: '/notes', icon: Notebook, label: 'Notes & Lending' },
+  { to: '/ai', icon: BotMessageSquare, label: 'AI Assistant' },
 ];
 
 export function Sidebar() {

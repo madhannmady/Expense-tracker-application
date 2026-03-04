@@ -14,6 +14,8 @@ import CreateBudget from './pages/CreateBudget';
 import MonthlyNotesList from './pages/MonthlyNotesList';
 import CreateNotes from './pages/CreateNotes';
 import NoteDetail from './pages/NoteDetail';
+import ChatHistory from './pages/ChatHistory';
+import ChatDetail from './pages/ChatDetail';
 import { Loader2 } from 'lucide-react';
 import { Toaster } from 'sonner';
 
@@ -66,6 +68,8 @@ function AppRoutes() {
         <Route path="/notes/create" element={<CreateNotes />} />
         <Route path="/notes/:id/edit" element={<CreateNotes />} />
         <Route path="/notes/:id" element={<NoteDetail />} />
+        <Route path="/ai" element={<ChatHistory />} />
+        <Route path="/ai/:id" element={<ChatDetail />} />
       </Route>
 
       {/* Fallback */}

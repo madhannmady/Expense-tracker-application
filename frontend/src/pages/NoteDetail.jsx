@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getNotesById, deleteNotes } from '../services/api';
 import { MONTH_NAMES, formatCurrency } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Edit, Trash2, Loader2, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '../components/ui/Skeleton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -115,19 +115,14 @@ export default function NoteDetail() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.05 }}
-              className="card p-4 sm:p-5 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 w-full"
+              className="p-4 sm:p-5 bg-blue-500/15 border border-blue-500/20 w-full rounded-xl hover:bg-blue-500/20 transition-colors"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-fg mb-0.5">Lent to</p>
                   <p className="text-sm sm:text-base font-semibold text-fg truncate">{entry.person_name || entry.title}</p>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                    <IndianRupee size={18} className="text-blue-500" />
-                  </div>
-                  <p className="text-xl sm:text-2xl font-bold text-fg tabular-nums">₹{Number(entry.amount).toFixed(2)}</p>
-                </div>
+                <p className="text-lg sm:text-2xl font-bold text-blue-400 tabular-nums shrink-0">₹{Number(entry.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
               </div>
             </motion.div>
           ))}
@@ -138,21 +133,19 @@ export default function NoteDetail() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + lendingEntries.length * 0.05 }}
-              className="card p-4 sm:p-5 bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-500/20 w-full"
+              className="p-4 sm:p-5 bg-violet-500/15 border border-violet-500/20 w-full rounded-xl hover:bg-violet-500/20 transition-colors"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-fg mb-0.5">Grand Total</p>
                   <p className="text-sm font-semibold text-fg">{lendingEntries.length} lending entries</p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-fg tabular-nums flex-shrink-0">₹{totalLent.toFixed(2)}</p>
+                <p className="text-lg sm:text-2xl font-bold text-violet-400 tabular-nums shrink-0">₹{totalLent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
               </div>
             </motion.div>
           )}
         </div>
       )}
-
-      {/* Notes Sections */}
       {note.note_entries && note.note_entries.length > 0 ? (
         <div className="space-y-4 w-full">
           {/* Lending Notes */}
