@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import { formatCurrency } from '../lib/utils';
+import { NumberTicker } from './ui/NumberTicker';
 
 export function StatCard({ title, value, icon: Icon, index = 0, isCurrency = true, suffix = '' }) {
+  const numValue = Number(value) || 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -18,7 +20,11 @@ export function StatCard({ title, value, icon: Icon, index = 0, isCurrency = tru
         {title}
       </p>
       <p className="text-lg sm:text-2xl font-bold text-fg tracking-tight line-clamp-2">
-        {isCurrency ? formatCurrency(value) : value}{suffix}
+        {isCurrency ? (
+          <>₹<NumberTicker value={numValue} decimalPlaces={2} delay={index * 0.1} /></>
+        ) : (
+          <><NumberTicker value={numValue} decimalPlaces={numValue % 1 !== 0 ? 1 : 0} delay={index * 0.1} />{suffix}</>
+        )}
       </p>
     </motion.div>
   );

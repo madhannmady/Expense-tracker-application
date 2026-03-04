@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 8000,
+  timeout: 30000,
 });
 
 // Attach JWT to requests
@@ -12,11 +12,47 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const loginUser = (username, password) =>
-  api.post('/auth/login', { username, password });
+// Retry interceptor for cold-start / network timeouts
+const MAX_RETRIES = 3;
+const RETRY_DELAY = [2000, 4000, 8000]; // exponential backoff
 
-export const registerUser = (username, password) =>
-  api.post('/auth/register', { username, password });
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    const isTimeout = error.code === 'ECONNABORTED';
+    const isNetworkError = !error.response && error.message === 'Network Error';
+    const isServerDown = error.response?.status >= 500;
+
+    if ((isTimeout || isNetworkError || isServerDown) && config && !config.__retryCount) {
+      config.__retryCount = 0;
+    }
+
+    if (
+      (isTimeout || isNetworkError || isServerDown) &&
+      config &&
+      config.__retryCount < MAX_RETRIES
+    ) {
+      config.__retryCount += 1;
+
+      // Notify any listener about the retry (used by Login/Register for UI)
+      if (config.onRetry) config.onRetry(config.__retryCount);
+
+      const delay = RETRY_DELAY[config.__retryCount - 1] || 8000;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      return api(config);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export const loginUser = (username, password, { onRetry } = {}) =>
+  api.post('/auth/login', { username, password }, { onRetry });
+
+export const registerUser = (username, password, { onRetry } = {}) =>
+  api.post('/auth/register', { username, password }, { onRetry });
 
 export const getMe = () => api.get('/auth/me');
 

@@ -11,6 +11,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [warmingUp, setWarmingUp] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -22,16 +23,20 @@ export default function Register() {
 
     setLoading(true);
     setError('');
+    setWarmingUp(false);
 
     try {
-      const res = await registerUser(username, password);
+      const res = await registerUser(username, password, {
+        onRetry: () => setWarmingUp(true),
+      });
       // Automatically log in the user after successful registration
       login(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
+      setWarmingUp(false);
     }
   };
 
@@ -194,6 +199,18 @@ export default function Register() {
               </motion.div>
             )}
 
+            {/* Cold-start notice */}
+            {warmingUp && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-amber-500/10 text-amber-500 text-sm px-4 py-3 rounded-xl border border-amber-500/20 flex items-center gap-2"
+              >
+                <Loader2 size={14} className="animate-spin flex-shrink-0" />
+                Server is waking up, please wait...
+              </motion.div>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
@@ -201,7 +218,10 @@ export default function Register() {
               className="btn-primary w-full py-4 rounded-xl text-[15px] flex items-center justify-center gap-2.5 mt-2"
             >
               {loading ? (
-                <Loader2 size={20} className="animate-spin" />
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  {warmingUp && <span className="text-sm">Connecting...</span>}
+                </>
               ) : (
                 <>
                   Sign Up

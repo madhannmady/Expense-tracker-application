@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { saveBudget, getBudgetByMonth } from '../services/api';
-import { MONTH_NAMES, formatCurrency } from '../lib/utils';
+import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -168,7 +168,7 @@ export default function CreateBudget() {
                 style={{ backgroundColor: 'rgba(23, 37, 84, 0.4)', border: '1px solid rgba(30, 58, 138, 0.4)' }}
               >
                 <div className="flex-1 flex items-center gap-4 min-w-0">
-                  <span className="text-sm font-medium text-fg truncate">{a.category}</span>
+                  <span className="text-sm font-medium text-fg truncate">{toTitleCase(a.category)}</span>
                   <span className="text-sm font-bold tabular-nums shrink-0 text-blue-400">
                     {formatCurrency(a.allocated_amount)}
                   </span>

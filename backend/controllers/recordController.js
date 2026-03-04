@@ -43,7 +43,7 @@ const createRecord = async (req, res) => {
     if (expenses?.length > 0) {
       const expenseRows = expenses.map((e) => ({
         record_id: record.id,
-        name: e.name,
+        name: (e.name || '').toLowerCase(),
         amount: e.amount,
       }));
       const { error: expErr } = await getSupabase().from('expenses').insert(expenseRows);
@@ -124,7 +124,7 @@ const updateRecord = async (req, res) => {
       }
     }
     if (expenses?.length > 0) {
-      const expenseRows = expenses.map((e) => ({ record_id: id, name: e.name, amount: e.amount }));
+      const expenseRows = expenses.map((e) => ({ record_id: id, name: (e.name || '').toLowerCase(), amount: e.amount }));
       const { error: expErr } = await getSupabase().from('expenses').insert(expenseRows);
       if (expErr) {
         console.error('Insert expenses error:', expErr);
@@ -183,7 +183,8 @@ const getDashboardStats = async (req, res) => {
       totalExpense += recExpense;
 
       (rec.expenses || []).forEach((exp) => {
-        categoryMap[exp.name] = (categoryMap[exp.name] || 0) + Number(exp.amount);
+        const normalizedName = (exp.name || '').toLowerCase();
+        categoryMap[normalizedName] = (categoryMap[normalizedName] || 0) + Number(exp.amount);
       });
 
       monthlyTrend.push({

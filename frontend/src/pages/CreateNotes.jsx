@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { createNotes, updateNotes, getNotesById } from '../services/api';
 import { MONTH_NAMES } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Loader2, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateNotes() {
@@ -27,6 +27,7 @@ export default function CreateNotes() {
     amount: '',
   });
   const [addedNotes, setAddedNotes] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   // Fetch notes data if editing
   useEffect(() => {
@@ -59,7 +60,14 @@ export default function CreateNotes() {
       toast.error('For lending notes, please fill in person name and amount');
       return;
     }
-    setAddedNotes([...addedNotes, { ...noteInput }]);
+    if (editingIndex !== null) {
+      // Update existing note
+      setAddedNotes(addedNotes.map((n, idx) => idx === editingIndex ? { ...noteInput } : n));
+      setEditingIndex(null);
+      toast.success('Note updated');
+    } else {
+      setAddedNotes([...addedNotes, { ...noteInput }]);
+    }
     setNoteInput({
       title: '',
       description: '',
@@ -69,7 +77,34 @@ export default function CreateNotes() {
     });
   };
 
-  const removeNote = (i) => setAddedNotes(addedNotes.filter((_, idx) => idx !== i));
+  const editNote = (i) => {
+    const note = addedNotes[i];
+    setNoteInput({
+      title: note.title,
+      description: note.description,
+      type: note.type,
+      personName: note.personName || '',
+      amount: note.amount ? String(note.amount) : '',
+    });
+    setEditingIndex(i);
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setNoteInput({
+      title: '',
+      description: '',
+      type: 'general',
+      personName: '',
+      amount: '',
+    });
+  };
+
+  const removeNote = (i) => {
+    setAddedNotes(addedNotes.filter((_, idx) => idx !== i));
+    if (editingIndex === i) cancelEdit();
+    else if (editingIndex !== null && editingIndex > i) setEditingIndex(editingIndex - 1);
+  };
 
   const handleTypeChange = (type) => {
     setNoteInput({ ...noteInput, type, personName: '', amount: '' });
@@ -207,7 +242,7 @@ export default function CreateNotes() {
 
         {/* Note Input */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">Add {noteInput.type === 'lending' ? 'Lending' : 'Personal'} Note</h2>
+          <h2 className="text-[15px] font-semibold text-fg mb-5">{editingIndex !== null ? 'Edit' : 'Add'} {noteInput.type === 'lending' ? 'Lending' : 'Personal'} Note</h2>
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-muted-fg">Title *</label>
@@ -258,13 +293,24 @@ export default function CreateNotes() {
               </>
             )}
 
-            <button
-              type="button"
-              onClick={addNote}
-              className="btn-primary w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2"
-            >
-              <Plus size={16} /> Add Note
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={addNote}
+                className="btn-primary flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+              >
+                {editingIndex !== null ? <><Save size={16} /> Update Note</> : <><Plus size={16} /> Add Note</>}
+              </button>
+              {editingIndex !== null && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-3 rounded-xl text-sm flex items-center justify-center gap-2 bg-muted text-muted-fg hover:opacity-80 transition-opacity"
+                >
+                  <X size={16} /> Cancel
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
 
@@ -292,13 +338,22 @@ export default function CreateNotes() {
                         </p>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeNote(i)}
-                      className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => editNote(i)}
+                        className={`p-2 rounded-lg transition-colors ${editingIndex === i ? 'text-primary bg-primary-soft' : 'text-green-500 hover:bg-green-500/10'}`}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeNote(i)}
+                        className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-fg line-clamp-2">{note.description}</p>
                 </div>

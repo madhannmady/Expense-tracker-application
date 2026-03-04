@@ -4,7 +4,7 @@ import { getRecordById, deleteRecord } from '../services/api';
 import { StatCard } from '../components/StatCard';
 import { ExpensePieChart } from '../components/ExpensePieChart';
 import { TrendAreaChart } from '../components/TrendAreaChart';
-import { formatCurrency, MONTH_NAMES } from '../lib/utils';
+import { formatCurrency, MONTH_NAMES, toTitleCase } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, TrendingDown, PiggyBank, Target,
@@ -71,13 +71,14 @@ export default function RecordDetail() {
   const savings = totalIncome - totalExpense;
   const savingRate = totalIncome > 0 ? ((savings / totalIncome) * 100).toFixed(1) : 0;
 
-  // Build pie chart data
+  // Build pie chart data — normalize names to avoid duplicates
   const nameMap = {};
   (record.expenses || []).forEach((e) => {
-    nameMap[e.name] = (nameMap[e.name] || 0) + Number(e.amount);
+    const key = e.name.toLowerCase();
+    nameMap[key] = (nameMap[key] || 0) + Number(e.amount);
   });
   const categoryBreakdown = Object.entries(nameMap)
-    .map(([category, amount]) => ({ category, amount }))
+    .map(([category, amount]) => ({ category: toTitleCase(category), amount }))
     .sort((a, b) => b.amount - a.amount);
 
   return (
@@ -205,7 +206,7 @@ export default function RecordDetail() {
             <div className="space-y-3">
               {(record.expenses || []).map((exp, i) => (
                 <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-destructive-soft border border-[var(--color-destructive)]/15">
-                  <span className="text-sm font-medium text-fg">{exp.name}</span>
+                  <span className="text-sm font-medium text-fg">{toTitleCase(exp.name)}</span>
                   <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(exp.amount)}</span>
                 </div>
               ))}

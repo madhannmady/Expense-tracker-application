@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getBudgetByMonth, deleteBudgetByMonth } from '../services/api';
-import { MONTH_NAMES, formatCurrency } from '../lib/utils';
+import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Pencil, TrendingUp, TrendingDown, Wallet, BadgeIndianRupee } from 'lucide-react';
+import { ArrowLeft, Trash2, Pencil, TrendingUp, TrendingDown, Wallet, BadgeIndianRupee, Minus } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -82,11 +82,21 @@ export default function BudgetDetail() {
   const totalActual = data.reduce((s, d) => s + Number(d.actual_amount), 0);
   const totalDiff = totalAllocated - totalActual;
 
-  const chartData = data.map((d) => ({
-    name: d.category,
-    Budget: Number(d.allocated_amount),
-    Actual: Number(d.actual_amount),
-  }));
+  const totalOther = data
+    .filter((d) => Number(d.allocated_amount) === 0)
+    .reduce((s, d) => s + Number(d.actual_amount), 0);
+
+  const chartData = data.map((d) => {
+    const isUnbudgeted = Number(d.allocated_amount) === 0;
+    const isOver = Number(d.actual_amount) > Number(d.allocated_amount);
+    // under budget → stripe pattern; over → solid red; unbudgeted → amber solid
+    return {
+      name: toTitleCase(d.category),
+      Budget: Number(d.allocated_amount),
+      Actual: Number(d.actual_amount),
+      barColor: isUnbudgeted ? '#f59e0b' : isOver ? '#9f1239' : 'url(#budgetStripe)',
+    };
+  });
 
   return (
     <div className="w-full space-y-6 sm:space-y-8">
@@ -135,7 +145,7 @@ export default function BudgetDetail() {
       />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5 w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 w-full">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-3 sm:p-5 flex flex-col w-full">
           <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2 line-clamp-2">Total Budget</p>
           <p className="text-lg sm:text-2xl font-bold text-fg tabular-nums">{formatCurrency(totalAllocated)}</p>
@@ -150,6 +160,10 @@ export default function BudgetDetail() {
             {totalDiff >= 0 ? '+' : ''}{formatCurrency(totalDiff)}
           </p>
         </motion.div>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="card p-3 sm:p-5 flex flex-col w-full">
+          <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2 line-clamp-2">Other Expenses</p>
+          <p className="text-lg sm:text-2xl font-bold tabular-nums text-amber-500">{formatCurrency(totalOther)}</p>
+        </motion.div>
       </div>
 
       {/* Bar Chart */}
@@ -160,6 +174,12 @@ export default function BudgetDetail() {
           <div className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                <defs>
+                  <pattern id="budgetStripe" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                    <rect width="8" height="8" fill="#052e16" />
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="#16a34a" strokeWidth="4" />
+                  </pattern>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.4} vertical={false} />
                 <XAxis dataKey="name" tick={{ fill: 'var(--color-muted-fg)', fontSize: 11 }} axisLine={{ stroke: 'var(--color-border)' }} tickLine={false} />
                 <YAxis tick={{ fill: 'var(--color-muted-fg)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
@@ -167,7 +187,7 @@ export default function BudgetDetail() {
                 <Bar dataKey="Budget" fill="#16a34a" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Actual" radius={[4, 4, 0, 0]}>
                   {chartData.map((entry, i) => (
-                    <Cell key={i} fill="#9f1239" />
+                    <Cell key={i} fill={entry.barColor} />
                   ))}
                 </Bar>
               </BarChart>
@@ -184,9 +204,24 @@ export default function BudgetDetail() {
         ) : (
           <div className="space-y-3 w-full">
             {data.map((item, i) => {
-              const diff = Number(item.allocated_amount) - Number(item.actual_amount);
-              const isUnder = diff >= 0;
-              const pct = item.allocated_amount > 0 ? Math.min((Number(item.actual_amount) / Number(item.allocated_amount)) * 100, 150) : 0;
+              const allocated = Number(item.allocated_amount);
+              const actual = Number(item.actual_amount);
+              const diff = allocated - actual;
+              const isUnbudgeted = allocated === 0;
+              const isUnder = !isUnbudgeted && diff >= 0;
+              const isOver = !isUnbudgeted && diff < 0;
+              const pct = allocated > 0 ? Math.min((actual / allocated) * 100, 150) : (actual > 0 ? 100 : 0);
+
+              // Color scheme: orange = unbudgeted, green = under budget, red = over budget
+              const bgColor = isUnbudgeted
+                ? 'rgba(245, 158, 11, 0.06)'
+                : isUnder ? 'rgba(34, 197, 94, 0.06)' : 'rgba(239, 68, 68, 0.06)';
+              const borderColor = isUnbudgeted
+                ? 'rgba(245, 158, 11, 0.15)'
+                : isUnder ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+              const barColor = isUnbudgeted ? '#f59e0b' : isUnder ? '#16a34a' : '#9f1239';
+              const textClass = isUnbudgeted ? 'text-amber-500' : isUnder ? 'text-success' : 'text-destructive';
+
               return (
                 <motion.div
                   key={i}
@@ -194,28 +229,36 @@ export default function BudgetDetail() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * i }}
                   className="p-3 sm:p-4 rounded-xl w-full"
-                  style={{
-                    backgroundColor: isUnder ? 'rgba(34, 197, 94, 0.06)' : 'rgba(239, 68, 68, 0.06)',
-                    border: `1px solid ${isUnder ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)'}`,
-                  }}
+                  style={{ backgroundColor: bgColor, border: `1px solid ${borderColor}` }}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-2">
-                    <span className="text-sm font-medium text-fg truncate">{item.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-fg truncate">{toTitleCase(item.category)}</span>
+                      {isUnbudgeted && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">No Budget</span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {isUnder ? <TrendingUp size={14} className="text-success" /> : <TrendingDown size={14} className="text-destructive" />}
-                      <span className={`text-sm font-bold tabular-nums ${isUnder ? 'text-success' : 'text-destructive'}`}>
-                        {isUnder ? '+' : ''}{formatCurrency(diff)}
+                      {isUnbudgeted ? (
+                        <Minus size={14} className="text-amber-500" />
+                      ) : isUnder ? (
+                        <TrendingUp size={14} className="text-success" />
+                      ) : (
+                        <TrendingDown size={14} className="text-destructive" />
+                      )}
+                      <span className={`text-sm font-bold tabular-nums ${textClass}`}>
+                        {isUnbudgeted ? formatCurrency(actual) : `${isUnder ? '+' : ''}${formatCurrency(diff)}`}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between text-xs text-muted-fg mb-1.5 gap-1">
-                    <span className="truncate">Budget: {formatCurrency(item.allocated_amount)}</span>
-                    <span className="truncate">Actual: {formatCurrency(item.actual_amount)}</span>
+                    <span className="truncate">{isUnbudgeted ? 'Unbudgeted Expense' : `Budget: ${formatCurrency(allocated)}`}</span>
+                    <span className="truncate">Actual: {formatCurrency(actual)}</span>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden bg-muted w-full">
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ backgroundColor: isUnder ? '#16a34a' : '#9f1239' }}
+                      style={{ backgroundColor: barColor }}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(pct, 100)}%` }}
                       transition={{ duration: 0.8, delay: 0.1 * i }}

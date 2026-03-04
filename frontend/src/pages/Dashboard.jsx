@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
 import { ExpensePieChart } from '../components/ExpensePieChart';
 import { TrendAreaChart } from '../components/TrendAreaChart';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, toTitleCase } from '../lib/utils';
 import { motion } from 'framer-motion';
 import { BadgeIndianRupee, TrendingDown, PiggyBank, Activity, LogOut } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -96,7 +96,7 @@ export default function Dashboard() {
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-sm mb-1.5">
-                      <span className="text-fg font-medium">{cat.category}</span>
+                      <span className="text-fg font-medium">{toTitleCase(cat.category)}</span>
                       <span className="text-muted-fg tabular-nums">{formatCurrency(cat.amount)}</span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -119,7 +119,7 @@ export default function Dashboard() {
               {d.recentExpenses.slice(0, 6).map((exp, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-themed last:border-b-0">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-fg truncate">{exp.name}</p>
+                    <p className="text-sm font-medium text-fg truncate">{toTitleCase(exp.name)}</p>
                   </div>
                   <span className="text-sm font-semibold text-destructive ml-4 tabular-nums shrink-0">-{formatCurrency(exp.amount)}</span>
                 </div>

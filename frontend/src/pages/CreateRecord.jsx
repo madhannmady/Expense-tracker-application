@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createRecord, updateRecord, getRecordById } from '../services/api';
-import { MONTH_NAMES, formatCurrency } from '../lib/utils';
+import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 export default function CreateRecord() {
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ export default function CreateRecord() {
 
   const [expenseInput, setExpenseInput] = useState({ name: '', amount: '' });
   const [addedExpenses, setAddedExpenses] = useState([]);
+
+  // Duplicate expense merge state
+  const [showMergeModal, setShowMergeModal] = useState(false);
+  const [pendingExpense, setPendingExpense] = useState(null);
 
   // Fetch record data if editing
   useEffect(() => {
@@ -56,8 +61,34 @@ export default function CreateRecord() {
 
   const addExpense = () => {
     if (!expenseInput.name || !expenseInput.amount) return;
-    setAddedExpenses([...addedExpenses, { ...expenseInput }]);
+    const normalizedName = expenseInput.name.toLowerCase();
+    const existingIndex = addedExpenses.findIndex(
+      (e) => e.name.toLowerCase() === normalizedName
+    );
+    if (existingIndex !== -1) {
+      setPendingExpense({ name: normalizedName, amount: expenseInput.amount });
+      setShowMergeModal(true);
+    } else {
+      setAddedExpenses([...addedExpenses, { name: normalizedName, amount: expenseInput.amount }]);
+      setExpenseInput({ name: '', amount: '' });
+    }
+  };
+
+  const handleMergeConfirm = () => {
+    setAddedExpenses(addedExpenses.map((e) =>
+      e.name.toLowerCase() === pendingExpense.name
+        ? { ...e, amount: String(Number(e.amount) + Number(pendingExpense.amount)) }
+        : e
+    ));
     setExpenseInput({ name: '', amount: '' });
+    setPendingExpense(null);
+    setShowMergeModal(false);
+    toast.success('Expense amount merged successfully');
+  };
+
+  const handleMergeCancel = () => {
+    setPendingExpense(null);
+    setShowMergeModal(false);
   };
 
   const removeExpense = (i) => setAddedExpenses(addedExpenses.filter((_, idx) => idx !== i));
@@ -254,7 +285,7 @@ export default function CreateRecord() {
                 className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl mb-2 bg-destructive-soft border border-[var(--color-destructive)]/15"
               >
                 <div className="flex-1 flex items-center gap-4 min-w-0">
-                  <span className="text-sm font-medium text-fg truncate">{exp.name}</span>
+                  <span className="text-sm font-medium text-fg truncate">{toTitleCase(exp.name)}</span>
                   <span className="text-sm font-bold text-destructive tabular-nums shrink-0">-{formatCurrency(exp.amount)}</span>
                 </div>
                 <button
@@ -291,6 +322,16 @@ export default function CreateRecord() {
           {loading ? <Loader2 size={18} className="animate-spin" /> : <><Save size={18} /> {isEdit ? 'Update Record' : 'Save Record'}</>}
         </button>
       </form>
+
+      <ConfirmModal
+        isOpen={showMergeModal}
+        onClose={handleMergeCancel}
+        onConfirm={handleMergeConfirm}
+        title="Duplicate Expense Found"
+        description={pendingExpense ? `"${toTitleCase(pendingExpense.name)}" already exists with ${formatCurrency(addedExpenses.find(e => e.name.toLowerCase() === pendingExpense.name)?.amount || 0)}. Do you want to add ${formatCurrency(pendingExpense.amount)} on top of that?` : ''}
+        confirmText="Yes, Merge"
+        cancelText="No, Cancel"
+      />
     </div>
   );
 }

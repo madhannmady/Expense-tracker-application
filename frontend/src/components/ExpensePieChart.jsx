@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, toTitleCase } from '../lib/utils';
 
 const COLORS = [
   'hsl(142, 76%, 36%)', 'hsl(142, 71%, 45%)', 'hsl(143, 64%, 24%)', 'hsl(141, 84%, 53%)',
@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload }) => {
           borderColor: 'var(--color-border)',
         }}
       >
-        <p className="font-medium text-fg">{category}</p>
+        <p className="font-medium text-fg">{toTitleCase(category)}</p>
         <p className="text-muted-fg">{formatCurrency(amount)} ({pct}%)</p>
       </div>
     );
@@ -74,7 +74,7 @@ export function ExpensePieChart({ data = [], title = 'Expense Breakdown' }) {
             {data.slice(0, 6).map((item, i) => (
               <div key={i} className="flex items-center gap-1.5 text-xs text-muted-fg">
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                {item.category}
+                {toTitleCase(item.category)}
               </div>
             ))}
           </div>
