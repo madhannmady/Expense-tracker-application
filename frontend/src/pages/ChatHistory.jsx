@@ -168,7 +168,7 @@ export default function ChatHistory() {
                         e.stopPropagation();
                         setDeleteTarget(chat.id);
                       }}
-                      className="p-2 rounded-lg text-muted-fg hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      className="p-2 rounded-lg text-muted-fg text-red-400 bg-red-500/10 transition-colors opacity-100 cursor-pointer"
                       title="Delete chat"
                     >
                       <Trash2 size={15} />
