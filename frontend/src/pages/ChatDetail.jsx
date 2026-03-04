@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getChatById, sendChatMessage } from '../services/api';
+import { getChatById, sendChatMessage, deleteChat } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, BotMessageSquare, User, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send, BotMessageSquare, User, Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '../components/ui/Skeleton';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 // ─── Simple markdown-like renderer for AI responses ───
 function FormattedMessage({ content }) {
@@ -164,6 +165,8 @@ export default function ChatDetail() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -229,6 +232,19 @@ export default function ChatDetail() {
     }
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteChat(id);
+      toast.success('Chat deleted');
+      navigate('/ai');
+    } catch {
+      toast.error('Failed to delete chat');
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full max-w-5xl mx-auto space-y-6">
@@ -252,13 +268,22 @@ export default function ChatDetail() {
         animate={{ opacity: 1, y: 0 }}
         className="shrink-0 pb-4 border-b border-themed mb-4"
       >
-        <button
-          onClick={() => navigate('/ai')}
-          className="flex items-center gap-2 text-sm mb-3 text-muted-fg hover:text-fg transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-          Back to chats
-        </button>
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => navigate('/ai')}
+            className="flex items-center gap-2 text-sm text-muted-fg hover:text-fg transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            Back to chats
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+            title="Delete chat"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
             <BotMessageSquare size={18} className="text-violet-400" />
@@ -389,6 +414,15 @@ export default function ChatDetail() {
           AI analyzes your actual expense data to provide personalized insights
         </p>
       </motion.div>
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Chat?"
+        description="This will permanently delete this conversation and all its messages."
+        isLoading={deleting}
+      />
     </div>
   );
 }

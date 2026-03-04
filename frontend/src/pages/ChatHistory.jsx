@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChats, createChat, deleteChat } from '../services/api';
+import { getChats, createChat } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, BotMessageSquare, Trash2, MessageSquare, Loader2, ArrowRight } from 'lucide-react';
+import { Plus, BotMessageSquare, MessageSquare, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '../components/ui/Skeleton';
-import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 export default function ChatHistory() {
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     getChats()
@@ -33,20 +30,7 @@ export default function ChatHistory() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    try {
-      await deleteChat(deleteTarget);
-      setChats((prev) => prev.filter((c) => c.id !== deleteTarget));
-      toast.success('Chat deleted');
-    } catch {
-      toast.error('Failed to delete chat');
-    } finally {
-      setDeleting(false);
-      setDeleteTarget(null);
-    }
-  };
+
 
   const formatTime = (dateStr) => {
     const d = new Date(dateStr);
@@ -161,35 +145,13 @@ export default function ChatHistory() {
                     </p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget(chat.id);
-                      }}
-                      className="p-2 rounded-lg text-muted-fg text-red-400 bg-red-500/10 transition-colors opacity-100 cursor-pointer"
-                      title="Delete chat"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                    <ArrowRight size={16} className="text-muted-fg group-hover:text-violet-400 transition-colors" />
-                  </div>
+
                 </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
       )}
-
-      <ConfirmModal
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Delete Chat?"
-        description="This will permanently delete this conversation and all its messages."
-        isLoading={deleting}
-      />
     </div>
   );
 }
