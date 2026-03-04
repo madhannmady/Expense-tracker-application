@@ -5,7 +5,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   LogOut,
-  Wallet,
+  ReceiptIndianRupee,
   PieChart,
   Notebook,
 } from 'lucide-react';
@@ -28,9 +28,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-7 pt-8 pb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
-            <Wallet size={20} className="text-white" />
-          </div>
+          <ReceiptIndianRupee size={24} className="text-success shrink-0" strokeWidth={1.5} />
           <div>
             <h1 className="text-[15px] font-bold text-fg tracking-tight leading-tight">
               Expense Tracker

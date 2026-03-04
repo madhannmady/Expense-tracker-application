@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { User, Lock, ArrowRight, Wallet, Loader2 } from 'lucide-react';
+import { User, Lock, ArrowRight, ReceiptIndianRupee, Loader2 } from 'lucide-react';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -73,7 +73,7 @@ export default function Register() {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center mb-8 border border-white/10">
-              <Wallet size={30} className="text-green-400" />
+              <ReceiptIndianRupee size={32} className="text-green-400" strokeWidth={1.5} />
             </div>
             <h2 className="text-4xl font-bold text-white mb-4 leading-tight tracking-tight">
               Start your financial<br />journey today
@@ -104,9 +104,7 @@ export default function Register() {
         >
           {/* Mobile logo (hidden on desktop since left panel has it) */}
           <div className="lg:hidden flex items-center gap-3 mb-12">
-            <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center">
-              <Wallet size={22} className="text-primary-fg" />
-            </div>
+            <ReceiptIndianRupee size={24} className="text-success" strokeWidth={1.5} />
             <span className="text-xl font-bold text-fg tracking-tight">Expense Tracker</span>
           </div>
 

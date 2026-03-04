@@ -7,8 +7,8 @@ import { TrendAreaChart } from '../components/TrendAreaChart';
 import { formatCurrency, MONTH_NAMES, toTitleCase } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, TrendingDown, PiggyBank, Target,
-  Trash2, Loader2, CalendarDays, Pencil, TrendingUp, BadgeIndianRupee
+  ArrowLeft, TrendingDown, PiggyBank,
+  Trash2, Loader2, CalendarDays, Pencil, TrendingUp, BadgeIndianRupee, Wallet
 } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -68,8 +68,11 @@ export default function RecordDetail() {
 
   const totalIncome = (record.incomes || []).reduce((s, i) => s + Number(i.amount), 0);
   const totalExpense = (record.expenses || []).reduce((s, e) => s + Number(e.amount), 0);
-  const savings = totalIncome - totalExpense;
-  const savingRate = totalIncome > 0 ? ((savings / totalIncome) * 100).toFixed(1) : 0;
+  const netSurplus = totalIncome - totalExpense;   // actual leftover after expenses
+  const plannedSavings = Number(record.savings_goal) || 0;  // what user deliberately saved
+  const amountLeft = netSurplus - plannedSavings;  // free money after expenses + savings
+  const savings = netSurplus;  // keep alias for the progress bar below
+  const savingRate = totalIncome > 0 ? ((netSurplus / totalIncome) * 100).toFixed(1) : 0;
 
   // Build pie chart data — normalize names to avoid duplicates
   const nameMap = {};
@@ -129,13 +132,68 @@ export default function RecordDetail() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <StatCard title="Total Income" value={totalIncome} icon={BadgeIndianRupee} index={0} />
         <StatCard title="Total Expenses" value={totalExpense} icon={TrendingDown} index={1} />
-        <StatCard title="Savings" value={savings} icon={PiggyBank} index={2} />
-        <StatCard
-          title={record.savings_goal > 0 ? 'Goal Progress' : 'Saving Rate'}
-          value={record.savings_goal > 0 ? Math.min(((savings / record.savings_goal) * 100).toFixed(1), 100) : savingRate}
-          icon={record.savings_goal > 0 ? Target : PiggyBank}
-          isCurrency={false} suffix="%" index={3}
-        />
+        <StatCard title="Savings" value={plannedSavings} icon={PiggyBank} index={2} />
+
+        {/* Amount Left — custom revamped card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 3 * 0.08, duration: 0.4 }}
+          className="relative overflow-hidden rounded-2xl w-full h-full p-4 sm:p-5 flex flex-col"
+          style={{
+            background: amountLeft >= 0
+              ? 'linear-gradient(135deg, #052e16 0%, #0a3728 50%, #052e16 100%)'
+              : 'linear-gradient(135deg, #2d0a0a 0%, #3d1010 50%, #2d0a0a 100%)',
+            border: `1px solid ${amountLeft >= 0 ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`,
+            boxShadow: amountLeft >= 0
+              ? '0 0 32px -8px rgba(22,163,74,0.3)'
+              : '0 0 32px -8px rgba(239,68,68,0.3)',
+          }}
+        >
+          {/* Glow orb */}
+          <div
+            className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-25"
+            style={{ backgroundColor: amountLeft >= 0 ? '#16a34a' : '#ef4444' }}
+          />
+
+          {/* Icon row */}
+          <div className="flex items-start justify-between mb-3 sm:mb-4">
+            <div
+              className="w-10 sm:w-11 h-10 sm:h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: amountLeft >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}
+            >
+              <Wallet size={18} style={{ color: amountLeft >= 0 ? '#4ade80' : '#f87171' }} />
+            </div>
+            {/* Status pill */}
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: amountLeft >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                color: amountLeft >= 0 ? '#4ade80' : '#f87171',
+              }}
+            >
+              {amountLeft >= 0 ? 'Healthy' : 'Deficit'}
+            </span>
+          </div>
+
+          {/* Label */}
+          <p className="text-xs sm:text-[13px] font-medium mb-1" style={{ color: amountLeft >= 0 ? 'rgba(134,239,172,0.8)' : 'rgba(252,165,165,0.8)' }}>
+            Amount Left
+          </p>
+
+          {/* Value */}
+          <p
+            className="text-lg sm:text-2xl font-bold tracking-tight tabular-nums"
+            style={{ color: amountLeft >= 0 ? '#4ade80' : '#f87171' }}
+          >
+            {amountLeft < 0 ? '-' : ''}₹{Math.abs(amountLeft).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </p>
+
+          {/* Sub-label */}
+          <p className="text-[10px] mt-1 opacity-50" style={{ color: amountLeft >= 0 ? '#bbf7d0' : '#fecaca' }}>
+            After expenses {plannedSavings > 0 ? '& savings' : ''}
+          </p>
+        </motion.div>
       </div>
 
       {/* New Layout: Pie Chart (top-left) + Income (bottom-left) | Expenses (right full-height) */}
