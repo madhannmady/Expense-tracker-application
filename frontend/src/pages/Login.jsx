@@ -179,7 +179,7 @@ export default function Login() {
                 className="bg-amber-500/10 text-amber-500 text-sm px-4 py-3 rounded-xl border border-amber-500/20 flex items-center gap-2"
               >
                 <Loader2 size={14} className="animate-spin flex-shrink-0" />
-                Server is waking up, please wait...
+                Hold tight, we're cooking... Server is waking up!
               </motion.div>
             )}
 

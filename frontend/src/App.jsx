@@ -16,18 +16,14 @@ import CreateNotes from './pages/CreateNotes';
 import NoteDetail from './pages/NoteDetail';
 import ChatHistory from './pages/ChatHistory';
 import ChatDetail from './pages/ChatDetail';
-import { Loader2 } from 'lucide-react';
+import { ColdStartLoader } from './components/ColdStartLoader';
 import { Toaster } from 'sonner';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: 'hsl(var(--background))' }}>
-        <Loader2 size={32} className="animate-spin" style={{ color: 'hsl(var(--primary))' }} />
-      </div>
-    );
+    return <ColdStartLoader />;
   }
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;
@@ -37,11 +33,7 @@ function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: 'hsl(var(--background))' }}>
-        <Loader2 size={32} className="animate-spin" style={{ color: 'hsl(var(--primary))' }} />
-      </div>
-    );
+    return <ColdStartLoader />;
   }
 
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
