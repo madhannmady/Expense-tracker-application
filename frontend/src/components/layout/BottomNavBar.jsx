@@ -43,7 +43,7 @@ export function BottomNavBar() {
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className={`p-2 rounded-xl transition-all ${
                       active
-                        ? 'bg-primary/20 text-primary'
+                        ? 'text-primary'
                         : 'text-muted-fg'
                     }`}
                   >
