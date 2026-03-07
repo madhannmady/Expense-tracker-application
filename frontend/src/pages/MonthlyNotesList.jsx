@@ -19,10 +19,12 @@ export default function MonthlyNotes() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = notes.filter((n) => {
-    const label = `${MONTH_NAMES[n.month - 1]} ${n.year}`.toLowerCase();
-    return label.includes(search.toLowerCase());
-  });
+  const filtered = notes
+    .filter((n) => {
+      const label = `${MONTH_NAMES[n.month - 1]} ${n.year}`.toLowerCase();
+      return label.includes(search.toLowerCase());
+    })
+    .sort((a, b) => b.year !== a.year ? b.year - a.year : a.month - b.month);
 
   if (loading) {
     return (

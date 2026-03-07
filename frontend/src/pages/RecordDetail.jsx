@@ -8,7 +8,8 @@ import { formatCurrency, MONTH_NAMES, toTitleCase } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, TrendingDown, PiggyBank,
-  Trash2, Loader2, CalendarDays, Pencil, TrendingUp, BadgeIndianRupee, Wallet
+  Trash2, Loader2, CalendarDays, Pencil, TrendingUp, BadgeIndianRupee, Wallet,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -20,6 +21,8 @@ export default function RecordDetail() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [expensePage, setExpensePage] = useState(0);
+  const EXPENSES_PER_PAGE = 9;
 
   useEffect(() => {
     getRecordById(id)
@@ -198,17 +201,21 @@ export default function RecordDetail() {
 
       {/* New Layout: Pie Chart (top-left) + Income (bottom-left) | Expenses (right full-height) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Left column: Pie Chart + Income Sources */}
-        <div className="space-y-5">
+        {/* Left column: Pie Chart + Income Sources equally stacked */}
+        <div className="grid grid-rows-2 gap-5" style={{ gridTemplateRows: '1fr 1fr' }}>
           {/* Pie Chart */}
-          {categoryBreakdown.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="h-full">
+            {categoryBreakdown.length > 0 ? (
               <ExpensePieChart data={categoryBreakdown} title="Expense Split" />
-            </motion.div>
-          )}
+            ) : (
+              <div className="card p-6 h-full flex items-center justify-center">
+                <p className="text-sm text-muted-fg">No expense data</p>
+              </div>
+            )}
+          </motion.div>
 
           {/* Income Sources */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-6">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-6 h-full overflow-auto">
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp size={16} className="text-success" />
               <h3 className="text-base font-semibold text-fg">Income Sources</h3>
@@ -252,29 +259,63 @@ export default function RecordDetail() {
           </motion.div>
         </div>
 
-        {/* Right column: Expenses (full height) */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="card p-6 h-fit lg:row-span-2">
-          <div className="flex items-center gap-2 mb-5">
-            <TrendingDown size={16} className="text-destructive" />
-            <h3 className="text-base font-semibold text-fg">Expenses</h3>
-          </div>
-          {(record.expenses || []).length === 0 ? (
-            <p className="text-sm text-muted-fg text-center py-8">No expenses recorded</p>
-          ) : (
-            <div className="space-y-3">
-              {(record.expenses || []).map((exp, i) => (
-                <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-destructive-soft border border-[var(--color-destructive)]/15">
-                  <span className="text-sm font-medium text-fg">{toTitleCase(exp.name)}</span>
-                  <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(exp.amount)}</span>
+        {/* Right column: Expenses with pagination */}
+        {(() => {
+          const allExpenses = record.expenses || [];
+          const totalPages = Math.ceil(allExpenses.length / EXPENSES_PER_PAGE);
+          const pageExpenses = allExpenses.slice(expensePage * EXPENSES_PER_PAGE, (expensePage + 1) * EXPENSES_PER_PAGE);
+          return (
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="card p-6 flex flex-col">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <TrendingDown size={16} className="text-destructive" />
+                  <h3 className="text-base font-semibold text-fg">Expenses</h3>
                 </div>
-              ))}
-              <div className="border-t border-themed pt-3 mt-1 flex justify-between">
-                <span className="text-sm font-semibold text-fg">Total Expenses</span>
-                <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(totalExpense)}</span>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setExpensePage((p) => Math.max(0, p - 1))}
+                      disabled={expensePage === 0}
+                      className="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft size={16} className="text-slate-400" />
+                    </button>
+                    <button
+                      onClick={() => setExpensePage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={expensePage === totalPages - 1}
+                      className="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
+                      <ChevronRight size={16} className="text-slate-400" />
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </motion.div>
+              {allExpenses.length === 0 ? (
+                <p className="text-sm text-muted-fg text-center py-8">No expenses recorded</p>
+              ) : (
+                <div className="flex flex-col flex-1">
+                  <div className="space-y-3">
+                    {pageExpenses.map((exp, i) => (
+                      <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-neutral-800/60 border border-neutral-700/50">
+                        <span className="text-sm font-medium text-fg">{toTitleCase(exp.name)}</span>
+                        <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(exp.amount)}</span>
+                      </div>
+                    ))}
+                    {totalPages > 1 && (
+                      <p className="text-[11px] text-muted-fg text-center pt-1">
+                        Page {expensePage + 1} of {totalPages} · {allExpenses.length} expenses total
+                      </p>
+                    )}
+                  </div>
+                  <div className="border-t border-themed pt-3 mt-auto flex justify-between">
+                    <span className="text-sm font-semibold text-fg">Total Expenses</span>
+                    <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(totalExpense)}</span>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          );
+        })()}
       </div>
     </div>
   );

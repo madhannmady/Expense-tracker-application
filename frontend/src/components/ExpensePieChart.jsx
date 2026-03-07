@@ -3,8 +3,18 @@ import { motion } from 'framer-motion';
 import { formatCurrency, toTitleCase } from '../lib/utils';
 
 const COLORS = [
-  'hsl(142, 76%, 36%)', 'hsl(142, 71%, 45%)', 'hsl(143, 64%, 24%)', 'hsl(141, 84%, 53%)',
-  'hsl(142, 60%, 30%)', 'hsl(140, 49%, 51%)', 'hsl(143, 85%, 65%)', 'hsl(144, 50%, 42%)',
+  '#6366f1', // indigo
+  '#f59e0b', // amber
+  '#ec4899', // pink
+  '#22d3ee', // cyan
+  '#f97316', // orange
+  '#a78bfa', // violet
+  '#34d399', // emerald
+  '#fb7185', // rose
+  '#38bdf8', // sky
+  '#facc15', // yellow
+  '#4ade80', // green
+  '#e879f9', // fuchsia
 ];
 
 const CustomTooltip = ({ active, payload }) => {

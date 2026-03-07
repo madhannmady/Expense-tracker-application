@@ -39,6 +39,7 @@ export default function CreateNotes() {
           setMonth(n.month);
           setYear(n.year);
           setAddedNotes((n.note_entries || []).map((entry) => ({
+            id: entry.id,
             title: entry.title,
             description: entry.description,
             type: entry.type || 'general',
@@ -80,6 +81,7 @@ export default function CreateNotes() {
   const editNote = (i) => {
     const note = addedNotes[i];
     setNoteInput({
+      id: note.id,
       title: note.title,
       description: note.description,
       type: note.type,
@@ -122,6 +124,7 @@ export default function CreateNotes() {
         month,
         year,
         notes: addedNotes.map((n) => ({
+          id: n.id || undefined,
           title: n.title,
           description: n.description,
           type: n.type,
