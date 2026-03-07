@@ -64,11 +64,21 @@ export default function CreateBudget() {
         month,
         year,
         allocations: allItems.map((a) => ({ category: a.category, allocated_amount: Number(a.allocated_amount) })),
+        isNew: !isEdit,
       });
-      toast.success('Budget saved successfully!');
+      toast.success(isEdit ? 'Budget updated successfully!' : 'Budget saved successfully!');
       navigate(`/budgets/${month}/${year}`);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save budget');
+      const status = err.response?.status;
+      const message = err.response?.data?.message;
+      if (status === 409) {
+        toast.error(message || 'Budget for this month already exists', {
+          description: 'Use the Edit option from the budget page to modify it.',
+          duration: 5000,
+        });
+      } else {
+        toast.error(message || 'Failed to save budget');
+      }
     } finally {
       setLoading(false);
     }

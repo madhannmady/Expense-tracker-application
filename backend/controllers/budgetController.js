@@ -101,7 +101,7 @@ const getBudgetByMonth = async (req, res) => {
 // @desc Create/update budget allocations for a month
 const saveBudget = async (req, res) => {
   try {
-    const { month, year, allocations } = req.body;
+    const { month, year, allocations, isNew } = req.body;
     const userId = req.user.id;
 
     // Validate
@@ -109,15 +109,34 @@ const saveBudget = async (req, res) => {
       return res.status(400).json({ message: 'Month, year, and allocations are required' });
     }
 
-    // Delete existing allocations for this month/year
-    await getSupabase()
+    // If creating new, block if a budget already exists for this month/year
+    if (isNew) {
+      const { data: existing } = await getSupabase()
+        .from('budget_allocations')
+        .select('id')
+        .eq('month', month)
+        .eq('year', year)
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const monthName = monthNames[(month - 1)] || `Month ${month}`;
+        return res.status(409).json({ message: `Budget for ${monthName} ${year} already exists` });
+      }
+    }
+
+    // Delete existing allocations for this month/year/user
+    const { error: deleteError } = await getSupabase()
       .from('budget_allocations')
       .delete()
       .eq('month', month)
       .eq('year', year)
       .eq('user_id', userId);
 
-    // Insert new allocations
+    if (deleteError) throw deleteError;
+
+    // Upsert new allocations (onConflict covers any edge-case re-insertion)
     const rows = allocations
       .filter((a) => a.category && a.allocated_amount > 0)
       .map((a) => ({
@@ -129,7 +148,9 @@ const saveBudget = async (req, res) => {
       }));
 
     if (rows.length > 0) {
-      const { error } = await getSupabase().from('budget_allocations').insert(rows);
+      const { error } = await getSupabase()
+        .from('budget_allocations')
+        .upsert(rows, { onConflict: 'user_id,month,year,category' });
       if (error) throw error;
     }
 

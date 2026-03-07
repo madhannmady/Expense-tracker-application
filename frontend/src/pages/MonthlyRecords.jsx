@@ -20,10 +20,12 @@ export default function MonthlyRecords() {
   }, []);
 
   const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-  const filtered = records.filter((r) => {
-    const q = search.toLowerCase();
-    return months[r.month - 1].includes(q) || String(r.year).includes(q) || (r.notes && r.notes.toLowerCase().includes(q));
-  });
+  const filtered = records
+    .filter((r) => {
+      const q = search.toLowerCase();
+      return months[r.month - 1].includes(q) || String(r.year).includes(q) || (r.notes && r.notes.toLowerCase().includes(q));
+    })
+    .sort((a, b) => b.year !== a.year ? b.year - a.year : a.month - b.month);
 
   if (loading) {
     return (

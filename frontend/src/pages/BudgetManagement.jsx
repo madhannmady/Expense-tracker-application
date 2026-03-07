@@ -19,10 +19,12 @@ export default function BudgetManagement() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = budgets.filter((b) => {
-    const label = `${MONTH_NAMES[b.month - 1]} ${b.year}`.toLowerCase();
-    return label.includes(search.toLowerCase());
-  });
+  const filtered = budgets
+    .filter((b) => {
+      const label = `${MONTH_NAMES[b.month - 1]} ${b.year}`.toLowerCase();
+      return label.includes(search.toLowerCase());
+    })
+    .sort((a, b) => b.year !== a.year ? b.year - a.year : a.month - b.month);
 
   if (loading) {
     return (
