@@ -178,10 +178,7 @@ export default function NoteDetail() {
                           <p className="text-xs text-muted-fg">Amount</p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-fg line-clamp-3">{entry.description}</p>
-                      {(entry.updated_at || entry.created_at) && (
-                        <p className="text-[10px] text-green-800 mt-2">Last updated: {new Date(entry.updated_at || entry.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-                      )}
+                      <p className="text-sm text-muted-fg whitespace-pre-line">{entry.description}</p>
                     </div>
                   ))}
               </div>
@@ -206,10 +203,7 @@ export default function NoteDetail() {
                   .map((entry, i) => (
                     <div key={i} className="border border-themed rounded-xl p-3 sm:p-4 hover:bg-muted/30 transition-colors w-full">
                       <h3 className="font-semibold text-fg mb-2 truncate">{entry.title}</h3>
-                      <p className="text-sm text-muted-fg line-clamp-3">{entry.description}</p>
-                      {(entry.updated_at || entry.created_at) && (
-                        <p className="text-[10px] text-green-800 mt-2">Last updated: {new Date(entry.updated_at || entry.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-                      )}
+                      <p className="text-sm text-muted-fg whitespace-pre-line">{entry.description}</p>
                     </div>
                   ))}
               </div>
