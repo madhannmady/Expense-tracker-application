@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getNotesById, deleteNotes } from '../services/api';
 import { MONTH_NAMES, formatCurrency } from '../lib/utils';
@@ -7,6 +7,7 @@ import { ArrowLeft, Edit, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '../components/ui/Skeleton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { VoiceButton } from '../components/VoiceButton';
 
 export default function NoteDetail() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function NoteDetail() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  useEffect(() => {
+  const fetchNote = useCallback(() => {
     getNotesById(id)
       .then((res) => setNote(res.data))
       .catch(() => {
@@ -25,6 +26,18 @@ export default function NoteDetail() {
       })
       .finally(() => setLoading(false));
   }, [id, navigate]);
+
+  useEffect(() => { fetchNote(); }, [fetchNote]);
+
+  const handleVoiceAction = useCallback((transcript, actions) => {
+    const hasCRUD = (actions || []).some(
+      (a) => a.success && !['ASK_QUESTION', 'UNKNOWN'].includes(a.type)
+    );
+    if (hasCRUD) {
+      fetchNote();
+      toast.success('Notes updated via voice');
+    }
+  }, [fetchNote]);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -215,6 +228,19 @@ export default function NoteDetail() {
           <p>No notes added yet</p>
         </div>
       )}
+
+      {/* Voice Assistant FAB */}
+      <VoiceButton
+        pageType="notes"
+        pageContext={{
+          noteId: id || note?.id,
+          month: note.month,
+          year: note.year,
+          month_name: MONTH_NAMES[note.month - 1],
+          note_entries: note.note_entries || [],
+        }}
+        onActionComplete={handleVoiceAction}
+      />
     </div>
   );
 }

@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getChatById, sendChatMessage, deleteChat } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, BotMessageSquare, User, Loader2, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, BotMessageSquare, User, Loader2, Sparkles, Trash2, Mic, MicOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '../components/ui/Skeleton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 
 // ─── Simple markdown-like renderer for AI responses ───
 function FormattedMessage({ content }) {
@@ -169,6 +170,14 @@ export default function ChatDetail() {
   const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  const { isListening, isProcessing, toggle } = useVoiceRecorder({
+    pageType: 'chat',
+    pageContext: {},
+    onActionComplete: (transcript) => {
+      if (transcript) handleSend(transcript);
+    }
+  });
 
   useEffect(() => {
     getChatById(id)
@@ -398,6 +407,25 @@ export default function ChatDetail() {
               disabled={sending}
             />
           </div>
+          
+          <button
+            onClick={toggle}
+            className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
+               isListening ? 'bg-red-500 hover:bg-red-600 text-white shadow-xl shadow-red-500/20' :
+               isProcessing ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-500/20' :
+               'bg-violet-500/10 text-violet-500 hover:bg-violet-500/20'
+            }`}
+            title="Voice input"
+          >
+            {isProcessing ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : isListening ? (
+              <MicOff size={18} className="animate-pulse" />
+            ) : (
+              <Mic size={18} />
+            )}
+          </button>
+
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || sending}

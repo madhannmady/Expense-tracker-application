@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getBudgetByMonth, deleteBudgetByMonth } from '../services/api';
 import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
@@ -8,6 +8,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { VoiceButton } from '../components/VoiceButton';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
@@ -37,12 +38,24 @@ export default function BudgetDetail() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  useEffect(() => {
+  const fetchBudget = useCallback(() => {
     getBudgetByMonth(month, year)
       .then((res) => setData(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [month, year]);
+
+  useEffect(() => { fetchBudget(); }, [fetchBudget]);
+
+  const handleVoiceAction = useCallback((transcript, actions) => {
+    const hasCRUD = (actions || []).some(
+      (a) => a.success && !['ASK_QUESTION', 'UNKNOWN'].includes(a.type)
+    );
+    if (hasCRUD) {
+      fetchBudget();
+      toast.success('Budget updated via voice');
+    }
+  }, [fetchBudget]);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -270,6 +283,18 @@ export default function BudgetDetail() {
           </div>
         )}
       </motion.div>
+
+      {/* Voice Assistant FAB */}
+      <VoiceButton
+        pageType="budget"
+        pageContext={{
+          month: month,
+          year: year,
+          month_name: MONTH_NAMES[parseInt(month) - 1],
+          categories: data || [],
+        }}
+        onActionComplete={handleVoiceAction}
+      />
     </div>
   );
 }

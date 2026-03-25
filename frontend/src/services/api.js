@@ -85,3 +85,12 @@ export const createChat = (title) => api.post('/chats', { title });
 export const sendChatMessage = (id, message) => api.post(`/chats/${id}/messages`, { message }, { timeout: 60000 });
 export const deleteChat = (id) => api.delete(`/chats/${id}`);
 
+// Voice AI API
+export const processVoice = (formData) =>
+  api.post('/voice/process', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 45000,
+  });
+
+
+

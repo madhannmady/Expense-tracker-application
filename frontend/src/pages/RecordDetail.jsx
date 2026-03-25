@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRecordById, deleteRecord } from '../services/api';
 import { StatCard } from '../components/StatCard';
@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { VoiceButton } from '../components/VoiceButton';
+import { toast } from 'sonner';
 
 export default function RecordDetail() {
   const { id } = useParams();
@@ -24,12 +26,24 @@ export default function RecordDetail() {
   const [expensePage, setExpensePage] = useState(0);
   const EXPENSES_PER_PAGE = 9;
 
-  useEffect(() => {
+  const fetchRecord = useCallback(() => {
     getRecordById(id)
       .then((res) => setRecord(res.data))
       .catch(() => navigate('/records'))
       .finally(() => setLoading(false));
   }, [id, navigate]);
+
+  useEffect(() => { fetchRecord(); }, [fetchRecord]);
+
+  const handleVoiceAction = useCallback((transcript, actions) => {
+    const hasCRUD = (actions || []).some(
+      (a) => a.success && !['ASK_QUESTION', 'UNKNOWN'].includes(a.type)
+    );
+    if (hasCRUD) {
+      fetchRecord();
+      toast.success('Record updated via voice');
+    }
+  }, [fetchRecord]);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -317,6 +331,24 @@ export default function RecordDetail() {
           );
         })()}
       </div>
+
+      {/* Voice Assistant FAB */}
+      {record && (
+        <VoiceButton
+          pageType="record"
+          pageContext={{
+            recordId: record.id,
+            month: record.month,
+            year: record.year,
+            month_name: MONTH_NAMES[record.month - 1],
+            incomes: record.incomes || [],
+            expenses: record.expenses || [],
+            savings_goal: record.savings_goal,
+          }}
+          onActionComplete={handleVoiceAction}
+        />
+      )}
     </div>
   );
 }
+
