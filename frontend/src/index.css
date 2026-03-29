@@ -274,6 +274,14 @@ body::-webkit-scrollbar {
 /* Recharts tooltip fix */
 .recharts-tooltip-wrapper { outline: none !important; }
 
+/* ===== Sonner Toast Font Fix ===== */
+[data-sonner-toaster],
+[data-sonner-toast],
+.sonner-toaster,
+.sonner-toast {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
+}
+
 /* ===== Mobile Responsiveness ===== */
 * {
   box-sizing: border-box;

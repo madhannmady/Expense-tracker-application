@@ -452,7 +452,15 @@ export default function CreateRecord() {
         onClose={handleGPayCancel}
         onConfirm={handleGPayConfirm}
         title="Confirm Payment"
-        description={pendingGPayExpense ? `Did you complete the ${formatCurrency(pendingGPayExpense.amount)} payment for "${toTitleCase(pendingGPayExpense.name)}" in Google Pay?` : ''}
+        description={pendingGPayExpense ? (
+          <>
+            Did you complete the{' '}
+            <span className="text-green-500 font-semibold">{formatCurrency(pendingGPayExpense.amount)}</span>
+            {' '}payment for{' '}
+            <span className="text-blue-500 font-semibold">"{toTitleCase(pendingGPayExpense.name)}"</span>
+            {' '}in Google Pay?
+          </>
+        ) : ''}
         confirmText="Yes, I paid"
         cancelText="No, cancel"
       />
