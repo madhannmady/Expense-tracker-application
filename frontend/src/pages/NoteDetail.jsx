@@ -126,7 +126,7 @@ export default function NoteDetail() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => navigate(`/notes/${id}/edit`)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity flex-shrink-0"
+            className="w-full sm:w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity sm:flex-shrink-0"
             title="Edit notes"
           >
             <Pencil size={16} />
