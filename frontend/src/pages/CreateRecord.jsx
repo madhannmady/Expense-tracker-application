@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createRecord, updateRecord, getRecordById } from '../services/api';
 import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
@@ -28,9 +28,12 @@ export default function CreateRecord() {
   const [expenseInput, setExpenseInput] = useState({ name: '', amount: '' });
   const [addedExpenses, setAddedExpenses] = useState([]);
 
-  // GPay toggle state
+  // GPay state
   const [gpayEnabled, setGpayEnabled] = useState(false);
   const [gpayPending, setGpayPending] = useState(false);
+  const [showGPayConfirmModal, setShowGPayConfirmModal] = useState(false);
+  const [pendingGPayExpense, setPendingGPayExpense] = useState(null);
+  const gpayListenerRef = useRef(null);
 
   // Duplicate expense merge state
   const [showMergeModal, setShowMergeModal] = useState(false);
@@ -63,69 +66,60 @@ export default function CreateRecord() {
 
   const removeIncome = (i) => setAddedIncomes(addedIncomes.filter((_, idx) => idx !== i));
 
-  const openGPayAndWait = () => {
-    return new Promise((resolve, reject) => {
-      let appOpened = false;
-      let timeoutId;
-
-      const cleanup = () => {
-        document.removeEventListener('visibilitychange', handler);
-        clearTimeout(timeoutId);
-      };
-
-      const handler = () => {
-        if (document.visibilityState === 'hidden') {
-          appOpened = true;
-          clearTimeout(timeoutId);
-        } else if (document.visibilityState === 'visible' && appOpened) {
-          cleanup();
-          setTimeout(resolve, 300);
-        }
-      };
-
-      document.addEventListener('visibilitychange', handler);
-
-      // Open GPay QR scanner via deep link
-      if (/android/i.test(navigator.userAgent)) {
-        window.location.href = 'intent://upi/scanqr#Intent;scheme=tez;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.google.android.apps.nbu.paisa.user;end';
-      } else {
-        window.location.href = 'tez://upi/scanqr';
-      }
-
-      timeoutId = setTimeout(() => {
-        if (!appOpened) {
-          cleanup();
-          reject(new Error('Could not open Google Pay. Make sure Google Pay is installed on your device.'));
-        }
-      }, 3000);
-    });
+  const cleanupGPayListener = () => {
+    if (gpayListenerRef.current) {
+      document.removeEventListener('visibilitychange', gpayListenerRef.current);
+      gpayListenerRef.current = null;
+    }
   };
 
-  const addExpense = async () => {
+  useEffect(() => cleanupGPayListener, []);
+
+  const openGPay = () => {
+    let appOpened = false;
+    let timeoutId;
+
+    const handler = () => {
+      if (document.visibilityState === 'hidden') {
+        appOpened = true;
+        clearTimeout(timeoutId);
+      } else if (document.visibilityState === 'visible' && appOpened) {
+        cleanupGPayListener();
+        setGpayPending(false);
+        setTimeout(() => setShowGPayConfirmModal(true), 300);
+      }
+    };
+
+    cleanupGPayListener();
+    gpayListenerRef.current = handler;
+    document.addEventListener('visibilitychange', handler);
+
+    toast.info('Opening Google Pay... Come back here after payment.', { duration: 3000 });
+
+    if (/android/i.test(navigator.userAgent)) {
+      window.location.href = 'intent://upi/scanqr#Intent;scheme=tez;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.google.android.apps.nbu.paisa.user;end';
+    } else {
+      window.location.href = 'tez://upi/scanqr';
+    }
+
+    timeoutId = setTimeout(() => {
+      if (!appOpened) {
+        cleanupGPayListener();
+        setGpayPending(false);
+        setPendingGPayExpense(null);
+        toast.error('Could not open Google Pay. Make sure it is installed on your device.');
+      }
+    }, 3000);
+  };
+
+  const addExpense = () => {
     if (!expenseInput.name || !expenseInput.amount) return;
     const normalizedName = expenseInput.name.toLowerCase();
 
     if (gpayEnabled) {
+      setPendingGPayExpense({ name: normalizedName, amount: expenseInput.amount });
       setGpayPending(true);
-      try {
-        await openGPayAndWait();
-        const existingIndex = addedExpenses.findIndex(
-          (e) => e.name.toLowerCase() === normalizedName
-        );
-        if (existingIndex !== -1) {
-          setPendingExpense({ name: normalizedName, amount: expenseInput.amount });
-          setShowMergeModal(true);
-        } else {
-          setAddedExpenses([...addedExpenses, { name: normalizedName, amount: expenseInput.amount }]);
-          setExpenseInput({ name: '', amount: '' });
-        }
-        toast.success('Payment successful! Expense added.');
-      } catch (err) {
-        console.error('GPay payment error:', err.message);
-        toast.error('Payment failed. Please try again.');
-      } finally {
-        setGpayPending(false);
-      }
+      openGPay();
     } else {
       const existingIndex = addedExpenses.findIndex(
         (e) => e.name.toLowerCase() === normalizedName
@@ -138,6 +132,32 @@ export default function CreateRecord() {
         setExpenseInput({ name: '', amount: '' });
       }
     }
+  };
+
+  const handleGPayConfirm = () => {
+    if (!pendingGPayExpense) return;
+    const { name, amount } = pendingGPayExpense;
+    const existingIndex = addedExpenses.findIndex(
+      (e) => e.name.toLowerCase() === name
+    );
+    if (existingIndex !== -1) {
+      setPendingExpense({ name, amount });
+      setShowGPayConfirmModal(false);
+      setPendingGPayExpense(null);
+      setShowMergeModal(true);
+    } else {
+      setAddedExpenses([...addedExpenses, { name, amount }]);
+      setExpenseInput({ name: '', amount: '' });
+      setPendingGPayExpense(null);
+      setShowGPayConfirmModal(false);
+      toast.success('Payment confirmed! Expense added.');
+    }
+  };
+
+  const handleGPayCancel = () => {
+    setPendingGPayExpense(null);
+    setShowGPayConfirmModal(false);
+    toast.info('Payment not completed. Expense not added.');
   };
 
   const handleMergeConfirm = () => {
@@ -425,6 +445,16 @@ export default function CreateRecord() {
         description={pendingExpense ? `"${toTitleCase(pendingExpense.name)}" already exists with ${formatCurrency(addedExpenses.find(e => e.name.toLowerCase() === pendingExpense.name)?.amount || 0)}. Do you want to add ${formatCurrency(pendingExpense.amount)} on top of that?` : ''}
         confirmText="Yes, Merge"
         cancelText="No, Cancel"
+      />
+
+      <ConfirmModal
+        isOpen={showGPayConfirmModal}
+        onClose={handleGPayCancel}
+        onConfirm={handleGPayConfirm}
+        title="Confirm Payment"
+        description={pendingGPayExpense ? `Did you complete the ${formatCurrency(pendingGPayExpense.amount)} payment for "${toTitleCase(pendingGPayExpense.name)}" in Google Pay?` : ''}
+        confirmText="Yes, I paid"
+        cancelText="No, cancel"
       />
     </div>
   );
