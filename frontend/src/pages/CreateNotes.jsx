@@ -41,7 +41,8 @@ export default function CreateNotes() {
           setAddedNotes((n.note_entries || []).map((entry) => ({
             title: entry.title,
             description: entry.description,
-            type: entry.type || 'general',
+            // Normalize legacy 'lending' type to 'lent_to' for the updated UI
+            type: entry.type === 'lending' ? 'lent_to' : (entry.type || 'general'),
             personName: entry.person_name || '',
             amount: entry.amount ? String(entry.amount) : '',
           })));
@@ -51,13 +52,15 @@ export default function CreateNotes() {
     }
   }, [editId, isEdit, navigate]);
 
+  const isLendingType = (type) => type === 'lent_to' || type === 'borrowed_from';
+
   const addNote = () => {
     if (!noteInput.title || !noteInput.description) {
       toast.error('Please fill in title and description');
       return;
     }
-    if (noteInput.type === 'lending' && (!noteInput.personName || !noteInput.amount)) {
-      toast.error('For lending notes, please fill in person name and amount');
+    if (isLendingType(noteInput.type) && (!noteInput.personName || !noteInput.amount)) {
+      toast.error('Please fill in person name and amount for lending entries');
       return;
     }
     if (editingIndex !== null) {
@@ -125,8 +128,8 @@ export default function CreateNotes() {
           title: n.title,
           description: n.description,
           type: n.type,
-          personName: n.type === 'lending' ? n.personName : null,
-          amount: n.type === 'lending' && n.amount ? Number(n.amount) : null,
+          personName: isLendingType(n.type) ? n.personName : null,
+          amount: isLendingType(n.type) && n.amount ? Number(n.amount) : null,
         })),
       };
       if (isEdit) {
@@ -216,7 +219,7 @@ export default function CreateNotes() {
         {/* Type Selection */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card p-6">
           <h2 className="text-[15px] font-semibold text-fg mb-5">Note Type</h2>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="radio"
@@ -230,19 +233,40 @@ export default function CreateNotes() {
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="radio"
-                value="lending"
-                checked={noteInput.type === 'lending'}
+                value="lent_to"
+                checked={noteInput.type === 'lent_to'}
                 onChange={(e) => handleTypeChange(e.target.value)}
                 className="w-4 h-4 accent-primary"
               />
-              <span className="text-sm text-muted-fg">Lending Tracker</span>
+              <span className="text-sm text-muted-fg">Lent To</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                value="borrowed_from"
+                checked={noteInput.type === 'borrowed_from'}
+                onChange={(e) => handleTypeChange(e.target.value)}
+                className="w-4 h-4 accent-primary"
+              />
+              <span className="text-sm text-muted-fg">Borrowed From</span>
             </label>
           </div>
+          {isLendingType(noteInput.type) && (
+            <p className="text-xs text-muted-fg mt-3">
+              {noteInput.type === 'lent_to'
+                ? 'Track money you have lent to someone (they owe you).'
+                : 'Track money you have borrowed from someone (you owe them).'}
+            </p>
+          )}
         </motion.div>
 
         {/* Note Input */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-6">
-          <h2 className="text-[15px] font-semibold text-fg mb-5">{editingIndex !== null ? 'Edit' : 'Add'} {noteInput.type === 'lending' ? 'Lending' : 'Personal'} Note</h2>
+          <h2 className="text-[15px] font-semibold text-fg mb-5">
+            {editingIndex !== null ? 'Edit' : 'Add'}{' '}
+            {noteInput.type === 'lent_to' ? 'Lent To' : noteInput.type === 'borrowed_from' ? 'Borrowed From' : 'Personal'}{' '}
+            Note
+          </h2>
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-muted-fg">Title *</label>
@@ -265,15 +289,17 @@ export default function CreateNotes() {
               />
             </div>
 
-            {noteInput.type === 'lending' && (
+            {isLendingType(noteInput.type) && (
               <>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-muted-fg">Person Name *</label>
+                  <label className="block text-sm font-medium text-muted-fg">
+                    {noteInput.type === 'lent_to' ? 'Person Name (Lent To) *' : 'Person Name (Borrowed From) *'}
+                  </label>
                   <input
                     type="text"
                     value={noteInput.personName}
                     onChange={(e) => setNoteInput({ ...noteInput, personName: e.target.value })}
-                    placeholder="Name of the person"
+                    placeholder={noteInput.type === 'lent_to' ? 'Who did you lend to?' : 'Who did you borrow from?'}
                     className="input-base w-full px-4 py-3 rounded-xl text-sm"
                   />
                 </div>
@@ -284,7 +310,7 @@ export default function CreateNotes() {
                     type="number"
                     value={noteInput.amount}
                     onChange={(e) => setNoteInput({ ...noteInput, amount: e.target.value })}
-                    placeholder="Amount lent"
+                    placeholder={noteInput.type === 'lent_to' ? 'Amount you lent' : 'Amount you borrowed'}
                     step="0.01"
                     min="0"
                     className="input-base w-full px-4 py-3 rounded-xl text-sm"
@@ -323,20 +349,35 @@ export default function CreateNotes() {
                 <div key={i} className="border border-themed rounded-xl p-4 bg-muted/30">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <span className={`inline-block px-2 py-1 rounded-md text-xs font-medium mb-2 ${
-                        note.type === 'lending'
-                          ? 'bg-blue-500/20 text-blue-300'
-                          : 'bg-green-500/20 text-green-300'
-                      }`}>
-                        {note.type === 'lending' ? 'Lending' : 'Personal'}
-                      </span>
-                      <h3 className="font-semibold text-fg text-sm">{note.title}</h3>
-                      {note.type === 'lending' && note.personName && (
-                        <p className="text-xs text-muted-fg mt-1">
-                          Lent to: <span className="text-fg font-medium">{note.personName}</span> | Amount:{' '}
-                          <span className="text-fg font-medium">₹{Number(note.amount).toFixed(2)}</span>
-                        </p>
-                      )}
+                      {(() => {
+                        const badgeStyles =
+                          note.type === 'lent_to'
+                            ? 'bg-blue-500/20 text-blue-300'
+                            : note.type === 'borrowed_from'
+                            ? 'bg-amber-500/20 text-amber-300'
+                            : 'bg-green-500/20 text-green-300';
+                        const badgeLabel =
+                          note.type === 'lent_to'
+                            ? 'Lent To'
+                            : note.type === 'borrowed_from'
+                            ? 'Borrowed From'
+                            : 'Personal';
+                        return (
+                          <>
+                            <span className={`inline-block px-2 py-1 rounded-md text-xs font-medium mb-2 ${badgeStyles}`}>
+                              {badgeLabel}
+                            </span>
+                            <h3 className="font-semibold text-fg text-sm">{note.title}</h3>
+                            {isLendingType(note.type) && note.personName && (
+                              <p className="text-xs text-muted-fg mt-1">
+                                {note.type === 'lent_to' ? 'Lent to' : 'Borrowed from'}:{' '}
+                                <span className="text-fg font-medium">{note.personName}</span> | Amount:{' '}
+                                <span className="text-fg font-medium">₹{Number(note.amount).toFixed(2)}</span>
+                              </p>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="flex gap-1">
                       <button

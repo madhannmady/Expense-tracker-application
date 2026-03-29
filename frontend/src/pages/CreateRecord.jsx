@@ -28,6 +28,10 @@ export default function CreateRecord() {
   const [expenseInput, setExpenseInput] = useState({ name: '', amount: '' });
   const [addedExpenses, setAddedExpenses] = useState([]);
 
+  // GPay toggle state
+  const [gpayEnabled, setGpayEnabled] = useState(false);
+  const [gpayPending, setGpayPending] = useState(false);
+
   // Duplicate expense merge state
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [pendingExpense, setPendingExpense] = useState(null);
@@ -59,18 +63,80 @@ export default function CreateRecord() {
 
   const removeIncome = (i) => setAddedIncomes(addedIncomes.filter((_, idx) => idx !== i));
 
-  const addExpense = () => {
+  const openGPayAndWait = () => {
+    return new Promise((resolve, reject) => {
+      let appOpened = false;
+      let timeoutId;
+
+      const cleanup = () => {
+        document.removeEventListener('visibilitychange', handler);
+        clearTimeout(timeoutId);
+      };
+
+      const handler = () => {
+        if (document.visibilityState === 'hidden') {
+          appOpened = true;
+          clearTimeout(timeoutId);
+        } else if (document.visibilityState === 'visible' && appOpened) {
+          cleanup();
+          setTimeout(resolve, 300);
+        }
+      };
+
+      document.addEventListener('visibilitychange', handler);
+
+      // Open GPay QR scanner via deep link
+      if (/android/i.test(navigator.userAgent)) {
+        window.location.href = 'intent://upi/scanqr#Intent;scheme=tez;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.google.android.apps.nbu.paisa.user;end';
+      } else {
+        window.location.href = 'tez://upi/scanqr';
+      }
+
+      timeoutId = setTimeout(() => {
+        if (!appOpened) {
+          cleanup();
+          reject(new Error('Could not open Google Pay. Make sure Google Pay is installed on your device.'));
+        }
+      }, 3000);
+    });
+  };
+
+  const addExpense = async () => {
     if (!expenseInput.name || !expenseInput.amount) return;
     const normalizedName = expenseInput.name.toLowerCase();
-    const existingIndex = addedExpenses.findIndex(
-      (e) => e.name.toLowerCase() === normalizedName
-    );
-    if (existingIndex !== -1) {
-      setPendingExpense({ name: normalizedName, amount: expenseInput.amount });
-      setShowMergeModal(true);
+
+    if (gpayEnabled) {
+      setGpayPending(true);
+      try {
+        await openGPayAndWait();
+        const existingIndex = addedExpenses.findIndex(
+          (e) => e.name.toLowerCase() === normalizedName
+        );
+        if (existingIndex !== -1) {
+          setPendingExpense({ name: normalizedName, amount: expenseInput.amount });
+          setShowMergeModal(true);
+        } else {
+          setAddedExpenses([...addedExpenses, { name: normalizedName, amount: expenseInput.amount }]);
+          setExpenseInput({ name: '', amount: '' });
+        }
+        toast.success('Payment successful! Expense added.');
+      } catch (err) {
+        console.error('GPay payment error:', err.message);
+        toast.error('Payment failed. Please try again.');
+      } finally {
+        setGpayPending(false);
+      }
     } else {
-      setAddedExpenses([...addedExpenses, { name: normalizedName, amount: expenseInput.amount }]);
-      setExpenseInput({ name: '', amount: '' });
+      const existingIndex = addedExpenses.findIndex(
+        (e) => e.name.toLowerCase() === normalizedName
+      );
+      if (existingIndex !== -1) {
+        setPendingExpense({ name: normalizedName, amount: expenseInput.amount });
+        setShowMergeModal(true);
+      } else {
+        setAddedExpenses([...addedExpenses, { name: normalizedName, amount: expenseInput.amount }]);
+        setExpenseInput({ name: '', amount: '' });
+      }
     }
   };
 
@@ -254,6 +320,7 @@ export default function CreateRecord() {
               onKeyDown={handleExpenseKeyDown}
               placeholder="e.g., Rent, Groceries, Netflix"
               className="input-base flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
+              disabled={gpayPending}
             />
             <input
               type="number"
@@ -263,14 +330,41 @@ export default function CreateRecord() {
               placeholder="Amount"
               min="0"
               className="input-base w-full sm:w-36 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm"
+              disabled={gpayPending}
             />
-            <button
-              type="button"
-              onClick={addExpense}
-              className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-semibold px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#0f3424] text-slate-200 border border-[#166534] cursor-pointer hover:opacity-80 transition-opacity w-full sm:w-auto"
-            >
-              <Plus size={14} /> Add
-            </button>
+            <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+              {/* GPay Toggle - Mobile Only */}
+              <button
+                type="button"
+                onClick={() => !gpayPending && setGpayEnabled(!gpayEnabled)}
+                className={`md:hidden flex items-center gap-2 px-3 py-2.5 sm:py-3 rounded-xl cursor-pointer transition-all border select-none shrink-0 ${
+                  gpayEnabled
+                    ? 'bg-[#1a73e8]/15 border-[#1a73e8]/40'
+                    : 'bg-[#1a1a2e]/50 border-[#2a2a3e] hover:border-[#3a3a4e]'
+                }`}
+                disabled={gpayPending}
+              >
+                <div className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${gpayEnabled ? 'bg-[#1a73e8]' : 'bg-gray-600'}`}>
+                  <div className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white transition-transform duration-200 shadow-sm ${gpayEnabled ? 'translate-x-[16px]' : 'translate-x-[2px]'}`} />
+                </div>
+                <span className={`text-xs font-bold whitespace-nowrap transition-colors ${gpayEnabled ? 'text-[#4285f4]' : 'text-muted-fg'}`}>
+                  GPay
+                </span>
+              </button>
+              {/* Add Button */}
+              <button
+                type="button"
+                onClick={addExpense}
+                disabled={gpayPending}
+                className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-semibold px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#0f3424] text-slate-200 border border-[#166534] cursor-pointer hover:opacity-80 transition-opacity flex-1 sm:flex-initial disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {gpayPending ? (
+                  <><Loader2 size={14} className="animate-spin" /> Paying...</>
+                ) : (
+                  <><Plus size={14} /> Add</>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Added expenses — red-tinted banners */}

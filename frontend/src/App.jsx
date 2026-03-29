@@ -82,7 +82,7 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <Toaster position={getToasterPosition()} theme="dark" richColors duration={20000} />
+          <Toaster position={getToasterPosition()} theme="dark" richColors duration={2000} />
           <AppRoutes />
         </AuthProvider>
       </ThemeProvider>

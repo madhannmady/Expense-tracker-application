@@ -132,9 +132,10 @@ export default function BudgetDetail() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => navigate(`/budgets/create?month=${month}&year=${year}`)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity whitespace-nowrap"
+            className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity flex-shrink-0"
+            title="Edit budget"
           >
-            <Pencil size={16} /> Edit Budget
+            <Pencil size={16} />
           </button>
           {data.length > 0 && (
             <button

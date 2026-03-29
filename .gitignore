@@ -76,3 +76,11 @@ temp/
 # TypeScript
 # ==============================
 *.tsbuildinfo
+
+# ==============================
+# Claude Code & AI Tools
+# ==============================
+.claude/
+*.claude.*
+.claude-*
+CLAUDE.md

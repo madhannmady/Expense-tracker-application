@@ -15,7 +15,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/records', icon: CalendarDays, label: 'Monthly Records' },
   { to: '/budgets', icon: PieChart, label: 'Budgets' },
-  { to: '/notes', icon: Notebook, label: 'Notes & Lending' },
+  { to: '/notes', icon: Notebook, label: 'Notes' },
   { to: '/ai', icon: BotMessageSquare, label: 'AI Assistant' },
 ];
 

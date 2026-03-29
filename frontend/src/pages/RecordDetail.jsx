@@ -122,9 +122,10 @@ export default function RecordDetail() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => navigate(`/records/${id}/edit`)}
-            className="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity order-2 sm:order-1"
+            className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer bg-primary-soft text-primary hover:opacity-80 transition-opacity flex-shrink-0 order-2 sm:order-1"
+            title="Edit record"
           >
-            <Pencil size={16} /> Edit
+            <Pencil size={16} />
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
@@ -275,7 +276,9 @@ export default function RecordDetail() {
 
         {/* Right column: Expenses with pagination */}
         {(() => {
-          const allExpenses = record.expenses || [];
+          const allExpenses = [...(record.expenses || [])].sort(
+            (a, b) => Number(b.amount) - Number(a.amount)
+          );
           const totalPages = Math.ceil(allExpenses.length / EXPENSES_PER_PAGE);
           const pageExpenses = allExpenses.slice(expensePage * EXPENSES_PER_PAGE, (expensePage + 1) * EXPENSES_PER_PAGE);
           return (
