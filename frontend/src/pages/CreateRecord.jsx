@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createRecord, updateRecord, getRecordById } from '../services/api';
+import { createRecord, updateRecord, getRecordById, getCategories, createCategory as createCategoryApi, deleteCategory as deleteCategoryApi } from '../services/api';
 import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, ArrowLeft, Save, Loader2, ChevronDown, ChevronLeft, ChevronRight, Pencil, X } from 'lucide-react';
+import {Plus, Trash2, ArrowLeft, Save, Loader2, ChevronDown, ChevronLeft, ChevronRight, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 
@@ -28,13 +28,8 @@ export default function CreateRecord() {
   const [expenseInput, setExpenseInput] = useState({ name: '', amount: '', category: 'other' });
   const [addedExpenses, setAddedExpenses] = useState([]);
 
-  // Categories
-  const [categories, setCategories] = useState(() => {
-    try {
-      const stored = localStorage.getItem('expense_categories');
-      return stored ? JSON.parse(stored) : ['other'];
-    } catch { return ['other']; }
-  });
+  // Categories — shared with budget page via API
+  const [categories, setCategories] = useState([{ id: null, name: 'other' }]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
   const [customCategoryDraft, setCustomCategoryDraft] = useState('');
@@ -97,6 +92,23 @@ export default function CreateRecord() {
     }
   }, [editId, isEdit, navigate]);
 
+  // Load categories from shared API
+  useEffect(() => {
+    getCategories()
+      .then((res) => {
+        const fetched = res.data.map((c) => ({ id: c.id, name: c.name }));
+        setCategories([...fetched, { id: null, name: 'other' }]);
+      })
+      .catch(() => {
+        try {
+          const stored = localStorage.getItem('expense_categories');
+          if (stored) {
+            setCategories(JSON.parse(stored).map((name) => ({ id: null, name })));
+          }
+        } catch {}
+      });
+  }, []);
+
   const addIncome = () => {
     if (!incomeInput.source || !incomeInput.amount) return;
     setAddedIncomes([...addedIncomes, { ...incomeInput }]);
@@ -151,24 +163,41 @@ export default function CreateRecord() {
     }, 3000);
   };
 
-  const addCustomCategory = (cat) => {
+  const addCustomCategory = async (cat) => {
     const normalized = cat.trim().toLowerCase();
-    if (!normalized || categories.includes(normalized)) return normalized;
-    const idx = categories.indexOf('other');
-    const newCats = [...categories];
-    newCats.splice(idx === -1 ? newCats.length : idx, 0, normalized);
-    setCategories(newCats);
-    localStorage.setItem('expense_categories', JSON.stringify(newCats));
+    if (!normalized || categories.some((c) => c.name === normalized)) return normalized;
+    try {
+      const res = await createCategoryApi(normalized);
+      const newCat = { id: res.data.id, name: normalized };
+      const idx = categories.findIndex((c) => c.name === 'other');
+      const newCats = [...categories];
+      newCats.splice(idx === -1 ? newCats.length : idx, 0, newCat);
+      setCategories(newCats);
+    } catch {
+      const idx = categories.findIndex((c) => c.name === 'other');
+      const newCats = [...categories];
+      newCats.splice(idx === -1 ? newCats.length : idx, 0, { id: null, name: normalized });
+      setCategories(newCats);
+    }
     return normalized;
   };
 
-  const deleteCategory = (cat) => {
-    if (cat === 'other') return;
-    const newCats = categories.filter((c) => c !== cat);
+  const deleteCategory = async (name) => {
+    if (name === 'other') return;
+    const cat = categories.find((c) => c.name === name);
+    const snapshot = categories;
+    const newCats = categories.filter((c) => c.name !== name);
     setCategories(newCats);
-    localStorage.setItem('expense_categories', JSON.stringify(newCats));
-    if (expenseInput.category === cat) {
+    if (expenseInput.category === name) {
       setExpenseInput((prev) => ({ ...prev, category: 'other' }));
+    }
+    if (cat?.id) {
+      try {
+        await deleteCategoryApi(cat.id);
+      } catch {
+        setCategories(snapshot);
+        toast.error('Failed to delete category');
+      }
     }
   };
 
@@ -177,11 +206,11 @@ export default function CreateRecord() {
     setExpenseInput((prev) => ({ ...prev, category: val }));
   };
 
-  const confirmCustomCategory = () => {
+  const confirmCustomCategory = async () => {
     const trimmed = customCategoryDraft.trim().toLowerCase();
     if (!trimmed) return;
-    addCustomCategory(trimmed);
-    setExpenseInput((prev) => ({ ...prev, category: trimmed }));
+    const normalized = await addCustomCategory(trimmed);
+    setExpenseInput((prev) => ({ ...prev, category: normalized }));
     setCustomCategoryDraft('');
     setShowCustomCategoryInput(false);
   };
@@ -467,9 +496,9 @@ export default function CreateRecord() {
                     <div className="max-h-44 overflow-y-auto">
                       {categories.map((cat) => (
                         <div
-                          key={cat}
+                          key={cat.name}
                           className={`group flex items-center justify-between px-4 py-2.5 transition-colors ${
-                            expenseInput.category === cat
+                            expenseInput.category === cat.name
                               ? 'bg-primary/10 text-primary'
                               : 'text-fg hover:bg-[var(--color-input)]'
                           }`}
@@ -477,20 +506,20 @@ export default function CreateRecord() {
                           <span
                             className="flex-1 text-sm capitalize cursor-pointer"
                             onClick={() => {
-                              handleCategoryChange(cat);
+                              handleCategoryChange(cat.name);
                               setShowCategoryDropdown(false);
                             }}
                           >
-                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                            {cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
                           </span>
-                          {cat !== 'other' && (
+                          {cat.name !== 'other' && (
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                deleteCategory(cat);
+                                deleteCategory(cat.name);
                               }}
-                              className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-destructive hover:bg-destructive/10 transition-all cursor-pointer shrink-0"
+                              className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded-md text-destructive hover:bg-destructive/10 transition-all cursor-pointer shrink-0"
                             >
                               <X size={12} />
                             </button>
@@ -657,7 +686,7 @@ export default function CreateRecord() {
                               <button
                                 type="button"
                                 onClick={() => setShowExpenseCategoryDropdown(showExpenseCategoryDropdown === i ? null : i)}
-                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium capitalize cursor-pointer bg-orange-500/15 border border-orange-500/30 text-orange-400"
+                                className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium capitalize cursor-pointer bg-orange-500/15 border border-orange-500/30 text-orange-400"
                               >
                                 <span className="whitespace-nowrap">{exp.category || 'other'}</span>
                                 <ChevronDown
@@ -671,11 +700,11 @@ export default function CreateRecord() {
                                   <div className="max-h-48 overflow-y-auto">
                                     {categories.map((cat) => (
                                       <div
-                                        key={cat}
+                                        key={cat.name}
                                         className="flex items-center justify-between px-3 py-2 text-xs hover:bg-[#111111] transition-colors group cursor-pointer"
                                         onClick={() => {
                                           setAddedExpenses(addedExpenses.map((item, idx) =>
-                                            idx === i ? { ...item, category: cat } : item
+                                            idx === i ? { ...item, category: cat.name } : item
                                           ));
                                           setEditingCategoryIdx(null);
                                           setShowExpenseCategoryDropdown(null);
@@ -683,20 +712,20 @@ export default function CreateRecord() {
                                       >
                                         <span
                                           className={`capitalize whitespace-nowrap ${
-                                            exp.category === cat ? 'text-success font-semibold' : 'text-fg'
+                                            exp.category === cat.name ? 'text-success font-semibold' : 'text-fg'
                                           }`}
                                         >
-                                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                          {cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
                                         </span>
-                                        {cat !== 'other' && (
+                                        {cat.name !== 'other' && (
                                           <button
                                             type="button"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              deleteCategory(cat);
+                                              deleteCategory(cat.name);
                                               setShowExpenseCategoryDropdown(null);
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 p-0.5 text-destructive hover:text-red-400 transition-opacity cursor-pointer shrink-0 ml-2"
+                                            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-0.5 text-destructive hover:text-red-400 transition-opacity cursor-pointer shrink-0 ml-2"
                                           >
                                             <X size={12} />
                                           </button>
@@ -728,7 +757,10 @@ export default function CreateRecord() {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => setEditingCategoryIdx(i)}
+                              onClick={() => {
+                                setEditingCategoryIdx(i);
+                                setShowExpenseCategoryDropdown(i);
+                              }}
                               className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-medium capitalize hover:bg-orange-500/25 transition-colors cursor-pointer max-w-[140px]"
                               title="Click to edit category"
                             >

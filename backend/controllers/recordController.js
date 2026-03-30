@@ -41,10 +41,13 @@ const createRecord = async (req, res) => {
 
     // Insert expenses
     if (expenses?.length > 0) {
+      const now = new Date().toISOString();
       const expenseRows = expenses.map((e) => ({
         record_id: record.id,
         name: (e.name || '').toLowerCase(),
+        category: (e.category || 'other').toLowerCase(),
         amount: e.amount,
+        created_at: now,
       }));
       const { error: expErr } = await getSupabase().from('expenses').insert(expenseRows);
       if (expErr) throw expErr;
@@ -124,7 +127,15 @@ const updateRecord = async (req, res) => {
       }
     }
     if (expenses?.length > 0) {
-      const expenseRows = expenses.map((e) => ({ record_id: id, name: (e.name || '').toLowerCase(), amount: e.amount }));
+      const now = new Date().toISOString();
+      const expenseRows = expenses.map((e) => ({
+        record_id: id,
+        name: (e.name || '').toLowerCase(),
+        category: (e.category || 'other').toLowerCase(),
+        amount: e.amount,
+        // preserve original created_at if present, set new timestamp for newly-added expenses
+        created_at: e.created_at !== undefined ? e.created_at : now,
+      }));
       const { error: expErr } = await getSupabase().from('expenses').insert(expenseRows);
       if (expErr) {
         console.error('Insert expenses error:', expErr);
@@ -183,8 +194,8 @@ const getDashboardStats = async (req, res) => {
       totalExpense += recExpense;
 
       (rec.expenses || []).forEach((exp) => {
-        const normalizedName = (exp.name || '').toLowerCase();
-        categoryMap[normalizedName] = (categoryMap[normalizedName] || 0) + Number(exp.amount);
+        const key = (exp.category || exp.name || 'other').toLowerCase();
+        categoryMap[key] = (categoryMap[key] || 0) + Number(exp.amount);
       });
 
       monthlyTrend.push({

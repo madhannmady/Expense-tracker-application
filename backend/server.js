@@ -17,6 +17,7 @@ app.use('/api/budgets', require('./routes/budgetRoutes'));
 app.use('/api/notes', require('./routes/notesRoutes'));
 app.use('/api/chats', require('./routes/chatRoutes'));
 app.use('/api/voice', require('./routes/voiceRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

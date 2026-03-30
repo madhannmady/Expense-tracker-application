@@ -25,6 +25,14 @@ const getBudgetByMonth = async (req, res) => {
     const { month, year } = req.params;
     const userId = req.user.id;
 
+    // Get all user categories to filter out deleted ones
+    const { data: allCategories } = await getSupabase()
+      .from('user_categories')
+      .select('name')
+      .eq('user_id', userId);
+    const validCategoryNames = new Set((allCategories || []).map((c) => c.name.trim().toLowerCase()));
+    validCategoryNames.add('other'); // Always allow 'other'
+
     // Get budget allocations for this month
     const { data: budgets, error: budErr } = await getSupabase()
       .from('budget_allocations')
@@ -35,6 +43,11 @@ const getBudgetByMonth = async (req, res) => {
       .order('category');
 
     if (budErr) throw budErr;
+
+    // Filter out deleted categories (safety check)
+    const validBudgets = (budgets || []).filter(
+      (b) => validCategoryNames.has(b.category.trim().toLowerCase())
+    );
 
     // Get actual expenses for this month from monthly_records -> expenses
     const { data: records } = await getSupabase()
@@ -49,24 +62,24 @@ const getBudgetByMonth = async (req, res) => {
     if (records) {
       const { data: expenses } = await getSupabase()
         .from('expenses')
-        .select('name, amount')
+        .select('name, amount, category')
         .eq('record_id', records.id);
       actualExpenses = expenses || [];
     }
 
-    // Aggregate actual expenses by name
+    // Aggregate actual expenses by category
     const actualMap = {};
     const originalNamesMap = {};
     actualExpenses.forEach((e) => {
-      const normalizedName = e.name.trim().toLowerCase();
-      actualMap[normalizedName] = (actualMap[normalizedName] || 0) + Number(e.amount);
-      if (!originalNamesMap[normalizedName]) {
-        originalNamesMap[normalizedName] = e.name.trim(); // Keep a clean cased version
+      const key = (e.category || e.name || 'other').trim().toLowerCase();
+      actualMap[key] = (actualMap[key] || 0) + Number(e.amount);
+      if (!originalNamesMap[key]) {
+        originalNamesMap[key] = e.category || e.name;
       }
     });
 
     // Merge budget with actual
-    const merged = (budgets || []).map((b) => {
+    const merged = validBudgets.map((b) => {
       const normalizedCategory = b.category.trim().toLowerCase();
       return {
         ...b,
@@ -77,7 +90,7 @@ const getBudgetByMonth = async (req, res) => {
 
     // Add unbudgeted expenses
     Object.entries(actualMap).forEach(([normalizedName, amount]) => {
-      const exists = (budgets || []).find((b) => b.category.trim().toLowerCase() === normalizedName);
+      const exists = validBudgets.find((b) => b.category.trim().toLowerCase() === normalizedName);
       if (!exists) {
         merged.push({
           id: null,
@@ -196,28 +209,29 @@ const deleteBudgetByMonth = async (req, res) => {
   }
 };
 
-// @desc Get budget summary (grouped by month/year)
+// @desc Get budget summary (grouped by month/year) with top categories
 const getBudgetSummary = async (req, res) => {
   try {
     const userId = req.user.id;
     const { data, error } = await getSupabase()
       .from('budget_allocations')
-      .select('month, year, allocated_amount')
+      .select('month, year, category, allocated_amount')
       .eq('user_id', userId)
       .order('year', { ascending: false })
       .order('month', { ascending: false });
 
     if (error) throw error;
 
-    // Group by month/year
+    // Group by month/year, collect per-category data
     const grouped = {};
     (data || []).forEach((b) => {
       const key = `${b.year}-${b.month}`;
       if (!grouped[key]) {
-        grouped[key] = { month: b.month, year: b.year, total_allocated: 0, categories: 0 };
+        grouped[key] = { month: b.month, year: b.year, total_allocated: 0, categories: 0, _cats: [] };
       }
       grouped[key].total_allocated += Number(b.allocated_amount);
       grouped[key].categories += 1;
+      grouped[key]._cats.push({ category: b.category, allocated_amount: Number(b.allocated_amount), actual_amount: 0 });
     });
 
     // Get actual expenses for each month
@@ -234,13 +248,31 @@ const getBudgetSummary = async (req, res) => {
       if (records) {
         const { data: expenses } = await getSupabase()
           .from('expenses')
-          .select('amount')
+          .select('amount, category')
           .eq('record_id', records.id);
+
+        const actualMap = {};
+        (expenses || []).forEach((e) => {
+          const cat = (e.category || 'other').trim().toLowerCase();
+          actualMap[cat] = (actualMap[cat] || 0) + Number(e.amount);
+        });
+
         g.total_actual = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        g._cats = g._cats.map((c) => ({
+          ...c,
+          actual_amount: actualMap[c.category.trim().toLowerCase()] || 0,
+        }));
       } else {
         g.total_actual = 0;
       }
+
       g.difference = g.total_allocated - g.total_actual;
+
+      // Top 3 categories by allocated_amount, include actual for progress display
+      g.top_categories = g._cats
+        .sort((a, b) => b.allocated_amount - a.allocated_amount)
+        .slice(0, 3);
+      delete g._cats;
     }
 
     res.json(Object.values(grouped));

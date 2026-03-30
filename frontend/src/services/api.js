@@ -92,5 +92,10 @@ export const processVoice = (formData) =>
     timeout: 45000,
   });
 
+// Categories API (shared between records and budgets)
+export const getCategories = () => api.get('/categories');
+export const createCategory = (name) => api.post('/categories', { name });
+export const deleteCategory = (id) => api.delete(`/categories/${id}`);
+
 
 

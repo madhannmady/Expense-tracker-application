@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getNotes } from '../services/api';
 import { MONTH_NAMES } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { Plus, Search, Notebook, Pencil } from 'lucide-react';
+import { Plus, Search, Notebook } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 
 export default function MonthlyNotes() {
@@ -97,13 +97,6 @@ export default function MonthlyNotes() {
                     <p className="text-xs text-muted-fg">{n.year}</p>
                   </div>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigate(`/notes/${n.id}/edit`); }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary-soft text-primary hover:opacity-80 transition-opacity flex-shrink-0"
-                  title="Edit notes"
-                >
-                  <Pencil size={14} />
-                </button>
               </div>
 
               <div>

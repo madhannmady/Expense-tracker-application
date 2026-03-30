@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getBudgetSummary } from '../services/api';
-import { MONTH_NAMES, formatCurrency } from '../lib/utils';
+import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
 import { motion } from 'framer-motion';
 import { Plus, Search, Wallet, TrendingUp, TrendingDown, BadgeIndianRupee } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -122,6 +122,32 @@ export default function BudgetManagement() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Top categories mini breakdown */}
+                  {b.top_categories?.length > 0 && (
+                    <div className="border-t border-themed pt-2.5 space-y-1.5">
+                      {b.top_categories.map((cat) => {
+                        const pct = cat.allocated_amount > 0
+                          ? Math.min((cat.actual_amount / cat.allocated_amount) * 100, 100)
+                          : 0;
+                        const catOver = cat.actual_amount > cat.allocated_amount;
+                        return (
+                          <div key={cat.category} className="flex items-center gap-2">
+                            <span className="text-[11px] text-muted-fg truncate flex-1">{toTitleCase(cat.category)}</span>
+                            <div className="w-14 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
+                              <div
+                                className={`h-full rounded-full transition-all ${catOver ? 'bg-destructive' : 'bg-primary'}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className={`text-[10px] tabular-nums font-medium shrink-0 w-8 text-right ${catOver ? 'text-destructive' : 'text-muted-fg'}`}>
+                              {Math.round(pct)}%
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );

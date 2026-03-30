@@ -91,13 +91,13 @@ export default function RecordDetail() {
   const savings = netSurplus;  // keep alias for the progress bar below
   const savingRate = totalIncome > 0 ? ((netSurplus / totalIncome) * 100).toFixed(1) : 0;
 
-  // Build pie chart data — normalize names to avoid duplicates
-  const nameMap = {};
+  // Build pie chart data — group by category
+  const catMap = {};
   (record.expenses || []).forEach((e) => {
-    const key = e.name.toLowerCase();
-    nameMap[key] = (nameMap[key] || 0) + Number(e.amount);
+    const key = (e.category || 'other').toLowerCase();
+    catMap[key] = (catMap[key] || 0) + Number(e.amount);
   });
-  const categoryBreakdown = Object.entries(nameMap)
+  const categoryBreakdown = Object.entries(catMap)
     .map(([category, amount]) => ({ category: toTitleCase(category), amount }))
     .sort((a, b) => b.amount - a.amount);
 
@@ -313,9 +313,19 @@ export default function RecordDetail() {
                 <div className="flex flex-col flex-1">
                   <div className="space-y-3">
                     {pageExpenses.map((exp, i) => (
-                      <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-neutral-800/60 border border-neutral-700/50">
-                        <span className="text-sm font-medium text-fg">{toTitleCase(exp.name)}</span>
-                        <span className="text-sm font-bold text-destructive tabular-nums">-{formatCurrency(exp.amount)}</span>
+                      <div key={i} className="py-2.5 px-3 rounded-xl bg-neutral-800/60 border border-neutral-700/50">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <span className="text-sm font-medium text-fg truncate">{toTitleCase(exp.name)}</span>
+                          <span className="text-sm font-bold text-destructive tabular-nums shrink-0">-{formatCurrency(exp.amount)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-medium text-orange-400 capitalize">{exp.category || 'other'}</span>
+                          <span className="text-[10px] text-muted-fg tabular-nums shrink-0">
+                            {exp.created_at && exp.created_at !== ''
+                              ? new Date(exp.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                              : '(not applicable)'}
+                          </span>
+                        </div>
                       </div>
                     ))}
                     {totalPages > 1 && (
