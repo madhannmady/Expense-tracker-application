@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { createRecord, updateRecord, getRecordById } from '../services/api';
 import { MONTH_NAMES, formatCurrency, toTitleCase } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, ArrowLeft, Save, Loader2, ChevronDown, ChevronLeft, ChevronRight, Pencil, X } from 'lucide-react';
+import { Trash2, ArrowLeft, Save, Loader2, ChevronDown, ChevronLeft, ChevronRight, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 
@@ -507,7 +507,11 @@ export default function CreateRecord() {
                         }}
                         className="w-full px-4 py-2.5 text-sm text-left text-primary hover:bg-primary/10 transition-colors cursor-pointer flex items-center gap-2"
                       >
-                        <Plus size={13} /> Add custom category...
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="6.5" y1="1.5" x2="6.5" y2="11.5" />
+                          <line x1="1.5" y1="6.5" x2="11.5" y2="6.5" />
+                        </svg>
+                        Add custom category...
                       </button>
                     </div>
                   </div>
@@ -567,7 +571,13 @@ export default function CreateRecord() {
                 {gpayPending ? (
                   <><Loader2 size={15} className="animate-spin" /> Paying via GPay...</>
                 ) : (
-                  <><Plus size={15} /> Add</>
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="7.5" y1="2" x2="7.5" y2="13" />
+                      <line x1="2" y1="7.5" x2="13" y2="7.5" />
+                    </svg>
+                    Add
+                  </>
                 )}
               </button>
             </div>
@@ -590,18 +600,18 @@ export default function CreateRecord() {
                           type="button"
                           onClick={() => setExpensePage((p) => Math.max(0, p - 1))}
                           disabled={expensePage === 0}
-                          className="w-7 h-7 rounded-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                          className="w-5 h-5 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
-                          <ChevronLeft size={14} className="text-slate-400" />
+                          <ChevronLeft size={12} className="sm:size-[14px] text-slate-400" />
                         </button>
-                        <span className="text-[11px] text-muted-fg tabular-nums">{expensePage + 1}/{totalExpensePages}</span>
+                        <span className="text-[10px] sm:text-[11px] text-muted-fg tabular-nums">{expensePage + 1}/{totalExpensePages}</span>
                         <button
                           type="button"
                           onClick={() => setExpensePage((p) => Math.min(totalExpensePages - 1, p + 1))}
                           disabled={expensePage === totalExpensePages - 1}
-                          className="w-7 h-7 rounded-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                          className="w-5 h-5 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
-                          <ChevronRight size={14} className="text-slate-400" />
+                          <ChevronRight size={12} className="sm:size-[14px] text-slate-400" />
                         </button>
                       </div>
                     )}
@@ -704,8 +714,12 @@ export default function CreateRecord() {
                                       className="w-full px-3 py-2 text-xs text-left transition-colors cursor-pointer flex items-center gap-1.5 hover:bg-[#111111] whitespace-nowrap"
                                       style={{ color: '#4ade80' }}
                                     >
-                                      <Plus size={12} />
-                                      <span>Add custom category...</span>
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="6" y1="1" x2="6" y2="11" />
+                                        <line x1="1" y1="6" x2="11" y2="6" />
+                                      </svg>
+                                      <span className="hidden sm:inline">Add custom category...</span>
+                                      <span className="sm:hidden">custom</span>
                                     </button>
                                   </div>
                                 </div>
@@ -715,7 +729,7 @@ export default function CreateRecord() {
                             <button
                               type="button"
                               onClick={() => setEditingCategoryIdx(i)}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-medium capitalize hover:bg-orange-500/25 transition-colors cursor-pointer max-w-[140px]"
+                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-medium capitalize hover:bg-orange-500/25 transition-colors cursor-pointer max-w-[140px]"
                               title="Click to edit category"
                             >
                               <Pencil size={9} className="text-orange-400 shrink-0" />

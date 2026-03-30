@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
@@ -11,6 +12,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -117,17 +119,70 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {d.recentExpenses.slice(0, 6).map((exp, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-themed last:border-b-0">
-                  <div className="min-w-0 flex-1">
+                <div key={i} className="py-2 border-b border-themed last:border-b-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
                     <p className="text-sm font-medium text-fg truncate">{toTitleCase(exp.name)}</p>
+                    <span className="text-sm font-semibold text-destructive tabular-nums shrink-0">-{formatCurrency(exp.amount)}</span>
                   </div>
-                  <span className="text-sm font-semibold text-destructive ml-4 tabular-nums shrink-0">-{formatCurrency(exp.amount)}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-medium text-orange-400 capitalize">{exp.category || 'other'}</span>
+                    <span className="text-[10px] text-muted-fg tabular-nums shrink-0">
+                      {exp.created_at && exp.created_at !== ''
+                        ? new Date(exp.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                        : '(not applicable)'}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </motion.div>
       </div>
+
+      {/* Floating Add Expense — mobile circle FAB above bottom navbar */}
+      <motion.button
+        onClick={() => navigate('/records/create')}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="lg:hidden fixed bottom-[88px] right-4 w-14 h-14 rounded-full flex items-center justify-center cursor-pointer z-40"
+        style={{
+          backgroundColor: '#0d2b1e',
+          border: '1.5px solid #166534',
+          color: '#4ade80',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        }}
+      >
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="11" y1="5" x2="11" y2="17" />
+          <line x1="5" y1="11" x2="17" y2="11" />
+        </svg>
+      </motion.button>
+
+      {/* Floating Add Expense — desktop pill button */}
+      <motion.button
+        onClick={() => navigate('/records/create')}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="hidden lg:flex fixed bottom-6 right-6 items-center gap-2 px-5 py-3 rounded-full text-sm font-bold cursor-pointer z-40"
+        style={{
+          backgroundColor: '#0d2b1e',
+          border: '1.5px solid #166534',
+          color: '#4ade80',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="8" y1="3" x2="8" y2="13" />
+          <line x1="3" y1="8" x2="13" y2="8" />
+        </svg>
+        Add Expense
+      </motion.button>
     </div>
   );
 }
