@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -14,13 +14,16 @@ export default function Register() {
   const [warmingUp, setWarmingUp] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const submittingRef = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     if (!username || !password || !confirmPassword) return setError('Please fill in all fields');
     if (password !== confirmPassword) return setError('Passwords do not match');
     if (password.length < 6) return setError('Password must be at least 6 characters');
 
+    submittingRef.current = true;
     setLoading(true);
     setError('');
     setWarmingUp(false);
@@ -29,14 +32,19 @@ export default function Register() {
       const res = await registerUser(username, password, {
         onRetry: () => setWarmingUp(true),
       });
-      // Automatically log in the user after successful registration
       login(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const isNetworkError = !err.response;
+      setError(
+        isNetworkError
+          ? 'Server is unavailable. Please wait a moment and try again.'
+          : err.response?.data?.message || 'Registration failed. Please try again.'
+      );
     } finally {
       setLoading(false);
       setWarmingUp(false);
+      submittingRef.current = false;
     }
   };
 
@@ -218,7 +226,7 @@ export default function Register() {
               {loading ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
-                  {warmingUp && <span className="text-sm">Connecting...</span>}
+                  <span className="text-sm">{warmingUp ? 'Connecting...' : 'Creating account...'}</span>
                 </>
               ) : (
                 <>

@@ -12,10 +12,15 @@ export function AuthProvider({ children }) {
     if (token) {
       getMe()
         .then((res) => setUser(res.data))
-        .catch(() => {
-          localStorage.removeItem('token');
-          setToken(null);
-          setUser(null);
+        .catch((error) => {
+          // Only clear token on 401 (invalid/expired token).
+          // Network errors (server sleeping/cold start) should preserve the token
+          // so the user is auto-logged in once the server wakes up.
+          if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            setToken(null);
+            setUser(null);
+          }
         })
         .finally(() => setLoading(false));
     } else {

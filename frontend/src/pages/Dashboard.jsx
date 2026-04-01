@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardStats } from '../services/api';
+import { getDashboardStats, getRecords } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
 import { ExpensePieChart } from '../components/ExpensePieChart';
@@ -15,6 +15,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const handleAddExpense = async () => {
+    try {
+      const res = await getRecords();
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      const existing = res.data.find(r => r.month === currentMonth && r.year === currentYear);
+      if (existing) {
+        navigate(`/records/${existing.id}/edit`);
+      } else {
+        navigate('/records/create');
+      }
+    } catch {
+      navigate('/records/create');
+    }
+  };
 
   useEffect(() => {
     getDashboardStats()
@@ -141,7 +158,7 @@ export default function Dashboard() {
 
       {/* Floating Add Expense — mobile circle FAB above bottom navbar */}
       <motion.button
-        onClick={() => navigate('/records/create')}
+        onClick={handleAddExpense}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
@@ -163,7 +180,7 @@ export default function Dashboard() {
 
       {/* Floating Add Expense — desktop pill button */}
       <motion.button
-        onClick={() => navigate('/records/create')}
+        onClick={handleAddExpense}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
