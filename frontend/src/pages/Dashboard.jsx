@@ -1,35 +1,65 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getDashboardStats, getRecords } from '../services/api';
+import { getDashboardStats, getRecords, getCategories, createRecord, updateRecord } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
 import { ExpensePieChart } from '../components/ExpensePieChart';
 import { TrendAreaChart } from '../components/TrendAreaChart';
 import { formatCurrency, toTitleCase } from '../lib/utils';
-import { motion } from 'framer-motion';
-import { BadgeIndianRupee, TrendingDown, PiggyBank, Activity, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BadgeIndianRupee, TrendingDown, PiggyBank, Activity, LogOut, Loader2, X } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ name: '', category: 'other', amount: '' });
+  const [addLoading, setAddLoading] = useState(false);
+  const [categories, setCategories] = useState([{ id: null, name: 'other' }]);
 
-  const handleAddExpense = async () => {
+  const handleAddExpense = () => setShowAddModal(true);
+
+  const handleQuickSave = async () => {
+    if (!addForm.name.trim() || !addForm.category || !addForm.amount) {
+      toast.error('Please fill all fields');
+      return;
+    }
+    setAddLoading(true);
     try {
-      const res = await getRecords();
       const now = new Date();
-      const currentMonth = now.getMonth() + 1;
-      const currentYear = now.getFullYear();
-      const existing = res.data.find(r => r.month === currentMonth && r.year === currentYear);
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const newExpense = { name: addForm.name.trim(), category: addForm.category, amount: Number(addForm.amount) };
+
+      const recordsRes = await getRecords();
+      const existing = recordsRes.data.find(r => r.month === month && r.year === year);
+
       if (existing) {
-        navigate(`/records/${existing.id}/edit`);
+        await updateRecord(existing.id, {
+          month: existing.month,
+          year: existing.year,
+          savingsGoal: existing.savings_goal || 0,
+          notes: existing.notes || '',
+          incomes: (existing.incomes || []).map(i => ({ source: i.source, amount: i.amount })),
+          expenses: [
+            ...(existing.expenses || []).map(e => ({ name: e.name, category: e.category, amount: e.amount, created_at: e.created_at })),
+            newExpense,
+          ],
+        });
       } else {
-        navigate('/records/create');
+        await createRecord({ month, year, incomes: [], expenses: [newExpense], savingsGoal: 0 });
       }
-    } catch {
-      navigate('/records/create');
+
+      toast.success('Expense added!');
+      setShowAddModal(false);
+      setAddForm({ name: '', category: 'other', amount: '' });
+      getDashboardStats().then(res => setStats(res.data)).catch(console.error);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add expense');
+    } finally {
+      setAddLoading(false);
     }
   };
 
@@ -38,6 +68,12 @@ export default function Dashboard() {
       .then((res) => setStats(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    getCategories()
+      .then(res => setCategories(res.data?.length ? res.data : [{ id: null, name: 'other' }]))
+      .catch(() => {});
   }, []);
 
   if (loading) {
@@ -155,6 +191,95 @@ export default function Dashboard() {
           )}
         </motion.div>
       </div>
+
+      {/* Quick Add Expense Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !addLoading && setShowAddModal(false)}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md overflow-hidden bg-card border border-themed rounded-xl shadow-2xl"
+            >
+              <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-themed">
+                <h2 className="text-lg font-semibold text-fg">Add Expense</h2>
+                <button
+                  onClick={() => !addLoading && setShowAddModal(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-fg hover:text-fg hover:bg-muted transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-fg mb-1.5">Expense Name</label>
+                  <input
+                    value={addForm.name}
+                    onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && handleQuickSave()}
+                    placeholder="e.g. Groceries, Fuel..."
+                    className="input-base w-full px-4 py-2.5 rounded-xl text-sm"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-fg mb-1.5">Category</label>
+                  <select
+                    value={addForm.category}
+                    onChange={e => setAddForm(f => ({ ...f, category: e.target.value }))}
+                    className="input-base w-full px-4 py-2.5 rounded-xl text-sm capitalize"
+                  >
+                    {categories.map((c, i) => (
+                      <option key={i} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-fg mb-1.5">Amount (₹)</label>
+                  <input
+                    type="number"
+                    value={addForm.amount}
+                    onChange={e => setAddForm(f => ({ ...f, amount: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && handleQuickSave()}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    className="input-base w-full px-4 py-2.5 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+              <div className="px-6 py-4 bg-muted/60 border-t border-themed flex justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={addLoading}
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-primary bg-primary-soft hover:opacity-80 rounded-xl transition-opacity disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={addLoading}
+                  onClick={handleQuickSave}
+                  className="flex items-center justify-center gap-2 px-5 py-2 text-sm font-medium text-primary-fg bg-primary hover:opacity-80 rounded-xl transition-opacity disabled:opacity-50 cursor-pointer"
+                >
+                  {addLoading ? <Loader2 size={15} className="animate-spin" /> : null}
+                  {addLoading ? 'Saving...' : 'Save Expense'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Add Expense — mobile circle FAB above bottom navbar */}
       <motion.button

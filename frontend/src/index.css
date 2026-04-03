@@ -177,6 +177,7 @@ body::-webkit-scrollbar {
 .bg-primary-soft { background-color: color-mix(in srgb, var(--color-primary) 12%, transparent); }
 .bg-secondary { background-color: var(--color-secondary); }
 .bg-destructive-soft { background-color: color-mix(in srgb, var(--color-destructive) 10%, transparent); }
+.bg-warning { background-color: var(--color-warning); }
 
 .text-fg { color: var(--color-fg); }
 .text-card-fg { color: var(--color-card-fg); }
@@ -185,6 +186,7 @@ body::-webkit-scrollbar {
 .text-primary-fg { color: var(--color-primary-fg); }
 .text-destructive { color: var(--color-destructive); }
 .text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
 
 .border-themed { border-color: var(--color-border); }
 .border-primary { border-color: var(--color-primary); }

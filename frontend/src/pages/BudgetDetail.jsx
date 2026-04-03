@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Trash2, Pencil, Wallet } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { toast } from 'sonner';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { VoiceButton } from '../components/VoiceButton';
 
@@ -155,8 +155,8 @@ export default function BudgetDetail() {
         isLoading={deleting}
       />
 
-      {/* Summary Cards - 2 cards only */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 w-full">
+      {/* Summary Cards - always side by side */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 w-full">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-3 sm:p-5 flex flex-col w-full">
           <p className="text-xs sm:text-sm text-muted-fg mb-1 sm:mb-2 line-clamp-2">Total Budget</p>
           <p className="text-lg sm:text-2xl font-bold text-fg tabular-nums">{formatCurrency(totalAllocated)}</p>
@@ -176,9 +176,17 @@ export default function BudgetDetail() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                 <defs>
-                  <pattern id="actualStripe" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                  <pattern id="stripeGreen" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
                     <rect width="8" height="8" fill="#052e16" />
                     <line x1="0" y1="0" x2="0" y2="8" stroke="#16a34a" strokeWidth="4" />
+                  </pattern>
+                  <pattern id="stripeYellow" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                    <rect width="8" height="8" fill="#422006" />
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="#eab308" strokeWidth="4" />
+                  </pattern>
+                  <pattern id="stripeRed" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                    <rect width="8" height="8" fill="#450a0a" />
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="#ef4444" strokeWidth="4" />
                   </pattern>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.4} vertical={false} />
@@ -186,7 +194,13 @@ export default function BudgetDetail() {
                 <YAxis tick={{ fill: 'var(--color-muted-fg)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
                 <Bar dataKey="Budget" fill="#16a34a" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Actual" fill="url(#actualStripe)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Actual" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => {
+                    const ratio = entry.Budget > 0 ? entry.Actual / entry.Budget : 0;
+                    const fill = ratio <= 1 ? 'url(#stripeGreen)' : ratio <= 1.3 ? 'url(#stripeYellow)' : 'url(#stripeRed)';
+                    return <Cell key={index} fill={fill} />;
+                  })}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -206,15 +220,24 @@ export default function BudgetDetail() {
                 const allocated = Number(item.allocated_amount);
                 const actual = Number(item.actual_amount);
                 const diff = allocated - actual;
+                const ratioUsed = allocated > 0 ? actual / allocated : 0;
                 const isUnder = diff >= 0;
-                const isOver = diff < 0;
-                const pct = Math.min((actual / allocated) * 100, 150);
+                const isSlightlyOver = !isUnder && ratioUsed <= 1.3;
+                const isSignificantlyOver = !isUnder && ratioUsed > 1.3;
+                const pct = Math.min(ratioUsed * 100, 150);
 
-                // Color scheme: green = under budget, red = over budget
-                const bgColor = isUnder ? 'rgba(34, 197, 94, 0.06)' : 'rgba(239, 68, 68, 0.06)';
-                const borderColor = isUnder ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)';
-                const barColor = isUnder ? '#16a34a' : '#9f1239';
-                const textClass = isUnder ? 'text-success' : 'text-destructive';
+                const bgColor = isUnder
+                  ? 'rgba(34, 197, 94, 0.06)'
+                  : isSlightlyOver
+                  ? 'rgba(234, 179, 8, 0.06)'
+                  : 'rgba(239, 68, 68, 0.06)';
+                const borderColor = isUnder
+                  ? 'rgba(34, 197, 94, 0.12)'
+                  : isSlightlyOver
+                  ? 'rgba(234, 179, 8, 0.12)'
+                  : 'rgba(239, 68, 68, 0.12)';
+                const barColor = isUnder ? '#16a34a' : isSlightlyOver ? '#eab308' : '#ef4444';
+                const textClass = isUnder ? 'text-success' : isSlightlyOver ? 'text-warning' : 'text-destructive';
 
                 return (
                   <motion.div
@@ -231,11 +254,13 @@ export default function BudgetDetail() {
                         {toTitleCase(item.category)}
                       </span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                        isOver
+                        isSignificantlyOver
                           ? 'bg-destructive/15 text-destructive'
+                          : isSlightlyOver
+                          ? 'bg-warning/15 text-warning'
                           : 'bg-success/15 text-success'
                       }`}>
-                        {isOver ? 'Over Budget' : 'Under Budget'}
+                        {isSignificantlyOver ? 'Over Budget' : isSlightlyOver ? 'Near Limit' : 'Under Budget'}
                       </span>
                     </div>
 
@@ -258,11 +283,8 @@ export default function BudgetDetail() {
                       />
                     </div>
 
-                    {/* Bottom: usage % + remaining / exceeded */}
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-fg tabular-nums">
-                        {`${Math.round((actual / allocated) * 100)}% used`}
-                      </span>
+                    {/* Bottom: remaining / exceeded */}
+                    <div className="flex justify-end text-xs">
                       <span className={`font-semibold tabular-nums ${textClass}`}>
                         {isUnder
                           ? `${formatCurrency(diff)} remaining`
