@@ -45,6 +45,9 @@ export default function CreateNotes() {
             type: entry.type === 'lending' ? 'lent_to' : (entry.type || 'general'),
             personName: entry.person_name || '',
             amount: entry.amount ? String(entry.amount) : '',
+            created_at: entry.created_at || null,
+            status: entry.status || 'open',
+            remaining_amount: entry.remaining_amount ? String(entry.remaining_amount) : '',
           })));
         })
         .catch(() => navigate('/notes'))
@@ -64,8 +67,8 @@ export default function CreateNotes() {
       return;
     }
     if (editingIndex !== null) {
-      // Update existing note
-      setAddedNotes(addedNotes.map((n, idx) => idx === editingIndex ? { ...noteInput } : n));
+      // Update existing note — spread original first to preserve created_at and other fields
+      setAddedNotes(addedNotes.map((n, idx) => idx === editingIndex ? { ...n, ...noteInput } : n));
       setEditingIndex(null);
       toast.success('Note updated');
     } else {
@@ -130,6 +133,9 @@ export default function CreateNotes() {
           type: n.type,
           personName: isLendingType(n.type) ? n.personName : null,
           amount: isLendingType(n.type) && n.amount ? Number(n.amount) : null,
+          created_at: n.created_at || undefined,
+          status: n.status || 'open',
+          remaining_amount: n.remaining_amount ? Number(n.remaining_amount) : null,
         })),
       };
       if (isEdit) {

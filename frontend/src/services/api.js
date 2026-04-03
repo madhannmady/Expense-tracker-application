@@ -77,6 +77,7 @@ export const getNotesByMonth = (month, year) => api.get(`/notes/month/${month}/$
 export const createNotes = (data) => api.post('/notes', data);
 export const updateNotes = (id, data) => api.put(`/notes/${id}`, data);
 export const deleteNotes = (id) => api.delete(`/notes/${id}`);
+export const updateNoteEntryStatus = (entryId, data) => api.patch(`/notes/entries/${entryId}`, data);
 
 // Chat AI API
 export const getChats = () => api.get('/chats');

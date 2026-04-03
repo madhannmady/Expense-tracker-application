@@ -37,6 +37,9 @@ const createNotes = async (req, res) => {
         type: n.type || 'general',
         person_name: n.personName || null,
         amount: n.amount || null,
+        status: n.status || 'open',
+        remaining_amount: n.remaining_amount || null,
+        created_at: new Date().toISOString(),
       }));
       const { error: noteErr } = await getSupabase()
         .from('note_entries')
@@ -44,7 +47,6 @@ const createNotes = async (req, res) => {
       if (noteErr) throw noteErr;
     }
 
-    // Return full record
     const full = await fetchFullNotes(notesRecord.id, userId);
     res.status(201).json(full);
   } catch (error) {
@@ -108,7 +110,7 @@ const getNotesByMonth = async (req, res) => {
   }
 };
 
-// @desc Update notes
+// @desc Update notes — preserves created_at for existing entries
 const updateNotes = async (req, res) => {
   try {
     const { month, year, notes: noteEntries } = req.body;
@@ -124,7 +126,7 @@ const updateNotes = async (req, res) => {
 
     if (notesErr) throw notesErr;
 
-    // Delete old entries and re-insert
+    // Delete old entries and re-insert, preserving created_at where provided
     const { error: delErr } = await getSupabase()
       .from('note_entries')
       .delete()
@@ -133,14 +135,21 @@ const updateNotes = async (req, res) => {
     if (delErr) console.error('Delete entries error:', delErr);
 
     if (noteEntries?.length > 0) {
-      const noteRows = noteEntries.map((n) => ({
-        notes_id: id,
-        title: n.title,
-        description: n.description,
-        type: n.type || 'general',
-        person_name: n.personName || null,
-        amount: n.amount || null,
-      }));
+      const noteRows = noteEntries.map((n) => {
+        const row = {
+          notes_id: id,
+          title: n.title,
+          description: n.description,
+          type: n.type || 'general',
+          person_name: n.personName || null,
+          amount: n.amount || null,
+          status: n.status || 'open',
+          remaining_amount: n.remaining_amount || null,
+        };
+        // Preserve the original created_at; fall back to now for brand-new entries added during edit
+        row.created_at = n.created_at || new Date().toISOString();
+        return row;
+      });
       const { error: noteErr } = await getSupabase()
         .from('note_entries')
         .insert(noteRows);
@@ -172,7 +181,49 @@ const deleteNotes = async (req, res) => {
   }
 };
 
-// Helper function to fetch full notes with entries
+// @desc Update ticket status (status + remaining_amount) for a single entry
+const updateEntryStatus = async (req, res) => {
+  try {
+    const { entryId } = req.params;
+    const { status, remaining_amount } = req.body;
+    const userId = req.user.id;
+
+    // Verify ownership: entry → notes_id → user_id
+    const { data: entry, error: findErr } = await getSupabase()
+      .from('note_entries')
+      .select('id, notes_id')
+      .eq('id', entryId)
+      .maybeSingle();
+
+    if (findErr) throw findErr;
+    if (!entry) return res.status(404).json({ message: 'Entry not found' });
+
+    const { data: parentNote, error: parentErr } = await getSupabase()
+      .from('monthly_notes')
+      .select('id')
+      .eq('id', entry.notes_id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (parentErr) throw parentErr;
+    if (!parentNote) return res.status(403).json({ message: 'Unauthorized' });
+
+    const { data: updated, error: updateErr } = await getSupabase()
+      .from('note_entries')
+      .update({ status, remaining_amount: remaining_amount ?? null })
+      .eq('id', entryId)
+      .select()
+      .single();
+
+    if (updateErr) throw updateErr;
+    res.json(updated);
+  } catch (error) {
+    console.error('Update entry status error:', error);
+    res.status(500).json({ message: 'Failed to update entry status' });
+  }
+};
+
+// Helper: fetch full notes with entries
 const fetchFullNotes = async (notesId, userId) => {
   const { data: notes, error } = await getSupabase()
     .from('monthly_notes')
@@ -192,4 +243,5 @@ module.exports = {
   getNotesByMonth,
   updateNotes,
   deleteNotes,
+  updateEntryStatus,
 };
