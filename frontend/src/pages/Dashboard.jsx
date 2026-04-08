@@ -282,49 +282,53 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* Floating Add Expense — mobile circle FAB above bottom navbar */}
-      <motion.button
-        onClick={handleAddExpense}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="lg:hidden fixed bottom-[88px] right-4 w-14 h-14 rounded-full flex items-center justify-center cursor-pointer z-40"
-        style={{
-          backgroundColor: '#0d2b1e',
-          border: '1.5px solid #166534',
-          color: '#4ade80',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        }}
-      >
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="11" y1="5" x2="11" y2="17" />
-          <line x1="5" y1="11" x2="17" y2="11" />
-        </svg>
-      </motion.button>
+      {!showAddModal && (
+        <motion.button
+          onClick={handleAddExpense}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="lg:hidden fixed bottom-[88px] right-4 w-14 h-14 rounded-full flex items-center justify-center cursor-pointer z-40"
+          style={{
+            backgroundColor: '#0d2b1e',
+            border: '1.5px solid #166534',
+            color: '#4ade80',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="11" y1="5" x2="11" y2="17" />
+            <line x1="5" y1="11" x2="17" y2="11" />
+          </svg>
+        </motion.button>
+      )}
 
       {/* Floating Add Expense — desktop pill button */}
-      <motion.button
-        onClick={handleAddExpense}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="hidden lg:flex fixed bottom-6 right-6 items-center gap-2 px-5 py-3 rounded-full text-sm font-bold cursor-pointer z-40"
-        style={{
-          backgroundColor: '#0d2b1e',
-          border: '1.5px solid #166534',
-          color: '#4ade80',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-        }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="8" y1="3" x2="8" y2="13" />
-          <line x1="3" y1="8" x2="13" y2="8" />
-        </svg>
-        Add Expense
-      </motion.button>
+      {!showAddModal && (
+        <motion.button
+          onClick={handleAddExpense}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="hidden lg:flex fixed bottom-6 right-6 items-center gap-2 px-5 py-3 rounded-full text-sm font-bold cursor-pointer z-40"
+          style={{
+            backgroundColor: '#0d2b1e',
+            border: '1.5px solid #166534',
+            color: '#4ade80',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="8" y1="3" x2="8" y2="13" />
+            <line x1="3" y1="8" x2="13" y2="8" />
+          </svg>
+          Add Expense
+        </motion.button>
+      )}
     </div>
   );
 }
